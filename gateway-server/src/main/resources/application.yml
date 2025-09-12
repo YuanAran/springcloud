@@ -1,0 +1,27 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway-server
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: auth-server
+          uri: lb://auth-server
+          predicates:
+            - Path=/auth/**
+
+        - id: database-provider
+          uri: lb://database-provider
+          predicates:
+            - Path=/db/**
+
+eureka:
+  client:
+    service-uri:
+      defaultZone: http://admin:123456@localhost:8761/eureka/
