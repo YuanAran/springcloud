@@ -1,9 +1,8 @@
 package com.authserver.until;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 public class JwtUntil {
@@ -16,22 +15,39 @@ public class JwtUntil {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis()+EXPIRATION))
-                .signWith(SignatureAlgorithm.HS256,SECRET)
+                .signWith(SignatureAlgorithm.HS256,SECRET.getBytes(StandardCharsets.UTF_8))
                 .compact();
     }
 
     //解析token
-    public static Claims parseToken(String token){
-        return Jwts.parser()
-                .setSigningKey(SECRET)
-                .parseClaimsJwt(token)
-                .getBody();
+    public static Claims parseToken(String token) {
+        System.out.println( "token1:"+token);
+        if (token.toLowerCase().startsWith("bearer ")) {
+            token = token.substring(7);
+        }
+        System.out.println( "token2:"+token);
+        try {
+            return Jwts.parser()
+                    .setSigningKey(SECRET.getBytes(StandardCharsets.UTF_8))
+                    .parseClaimsJws(token)  // 解析 JWS，而不是 JWT
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            System.out.println("token 过期");
+            return null;
+        } catch (SignatureException e) {
+            System.out.println("token 签名错误");
+            return null;
+        } catch (Exception e) {
+            System.out.println("token 无效");
+            return null;
+        }
     }
 
     // 校验 token 是否有效
     public static boolean isTokenValid(String token) {
         try {
             Claims claims = parseToken(token);
+            assert claims != null;
             return claims.getExpiration().after(new Date());
         } catch (Exception e) {
             return false;

@@ -4,10 +4,7 @@ import com.authserver.entity.LoginRequest;
 import com.authserver.feign.DatabaseClient;
 import com.authserver.until.JwtUntil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -21,4 +18,9 @@ public class AuthController {
         if (loginRequest1==null) return "用户不存在";
         if (!loginRequest1.getPassword().equals(loginRequest.getPassword())) return "密码错误";
         return JwtUntil.generateToken(loginRequest.getUsername());}
+
+    @GetMapping("/isTokenValid")
+    public boolean isTokenValid(@RequestParam("token") String token){
+        return JwtUntil.isTokenValid(token);
+    }
 }
