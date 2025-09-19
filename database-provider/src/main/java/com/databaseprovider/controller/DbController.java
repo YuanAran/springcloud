@@ -34,11 +34,11 @@ public class DbController {
         return sqlService.insert(sysUser);
     }
 
-    @GetMapping("/update")
+    @PostMapping("/update")
     public int update(@RequestBody UpdateRequest updateRequest){
         SysUser sysUser=new SysUser();
         BeanCopyUtils.copyNonNullProperties(updateRequest,sysUser);
-        return sqlService.update(sysUser);
+        return sqlService.update(sysUser,sysUser.getUsername());
     }
 
     @GetMapping("/delete")

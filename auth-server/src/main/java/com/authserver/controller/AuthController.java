@@ -35,4 +35,9 @@ public class AuthController {
     public boolean isTokenValid(@RequestParam("token") String token){
         return JwtUntil.isTokenValid(token);
     }
+
+    @GetMapping ("/getUsername")
+    public String getUsername(@RequestHeader("Authorization") String token){
+        return JwtUntil.getUsername(token);
+    }
 }

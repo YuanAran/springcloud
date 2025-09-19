@@ -23,8 +23,10 @@ public class SqlService {
         return userMapper.insert(sysUser);
     }
     //更新用户
-    public int update(SysUser sysUser) {
-        return userMapper.updateById(sysUser);
+    public int update(SysUser sysUser,String username) {
+        QueryWrapper<SysUser> wrapper =new QueryWrapper<SysUser>()
+                .eq("username",username);
+        return userMapper.update(sysUser,wrapper);
     }
 
     //删除用户

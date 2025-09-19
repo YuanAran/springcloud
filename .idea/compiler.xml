@@ -9,6 +9,7 @@
         <module name="gateway-server" />
         <module name="eureka-server" />
         <module name="database-provider" />
+        <module name="sys_user" />
         <module name="auth-server" />
       </profile>
     </annotationProcessing>

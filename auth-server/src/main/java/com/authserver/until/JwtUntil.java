@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Objects;
 
 public class JwtUntil {
     private static final String SECRET="sdahsdasdaosdjaosidjaodnjnkhasdaidhio";
@@ -56,6 +57,6 @@ public class JwtUntil {
 
     // 获取用户名
     public static String getUsername(String token) {
-        return parseToken(token).getSubject();
+        return Objects.requireNonNull(parseToken(token)).getSubject();
     }
 }
