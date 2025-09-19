@@ -19,7 +19,7 @@ public class AuthController {
     public String login(@RequestBody LoginRequest loginRequest){
         LoginRequest loginRequest1=databaseClient.selectByUname(loginRequest.getUsername());
         if (loginRequest1==null) return "用户不存在";
-        if (!loginRequest1.getPassword().equals(loginRequest.getPassword())) return "密码错误";
+        if (!passwordEncoder.matches(loginRequest.getPassword(),loginRequest1.getPassword())) return "密码错误";
         return JwtUntil.generateToken(loginRequest.getUsername());}
 
 

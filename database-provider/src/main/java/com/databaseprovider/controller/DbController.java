@@ -1,14 +1,12 @@
 package com.databaseprovider.controller;
 
 import com.databaseprovider.entity.LoginRequest;
+import com.databaseprovider.entity.UpdateRequest;
 import com.databaseprovider.pojo.SysUser;
 import com.databaseprovider.service.SqlService;
-import com.google.common.hash.HashCode;
+import com.databaseprovider.until.BeanCopyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/db")
@@ -17,7 +15,6 @@ public class DbController {
     private SqlService sqlService;
     @GetMapping("/selectByUname")
     public LoginRequest selectByUname(@RequestParam("username") String username) {
-        System.out.println("username:"+username);
         LoginRequest loginRequest=new LoginRequest();
         SysUser sysUser=sqlService.selectByUname(username);
         if(sysUser==null)return null;
@@ -35,5 +32,17 @@ public class DbController {
         sysUser.setUserId(username);
         sysUser.setNickname( nickname);
         return sqlService.insert(sysUser);
+    }
+
+    @GetMapping("/update")
+    public int update(@RequestBody UpdateRequest updateRequest){
+        SysUser sysUser=new SysUser();
+        BeanCopyUtils.copyNonNullProperties(updateRequest,sysUser);
+        return sqlService.update(sysUser);
+    }
+
+    @GetMapping("/delete")
+    public int delete(@RequestParam("username") String username) {
+        return sqlService.delete(username);
     }
 }
