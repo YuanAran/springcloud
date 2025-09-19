@@ -1,5 +1,6 @@
 package com.databaseprovider.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -9,7 +10,7 @@ import java.sql.Timestamp;
 @Data
 @TableName("sys_user")
 public class SysUser {
-  @TableId
+  @TableId(type = IdType.ASSIGN_ID)
   private String createBy;
   private Timestamp createTime;
   private String updateBy;

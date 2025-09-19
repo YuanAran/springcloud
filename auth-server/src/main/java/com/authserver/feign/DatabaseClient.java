@@ -9,4 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface DatabaseClient {
     @GetMapping("/db/selectByUname")
     LoginRequest selectByUname(@RequestParam("username") String username);
+    @GetMapping("/db/insert")
+    int insert(@RequestParam("username") String username,@RequestParam("password") String password
+            ,@RequestParam("sex") long sex,@RequestParam("nickname") String nickname);
 }

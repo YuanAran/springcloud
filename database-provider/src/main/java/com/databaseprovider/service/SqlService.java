@@ -17,4 +17,7 @@ public class SqlService {
                 .eq("username",username);
         return userMapper.selectOne(wrapper);
     }
+    public int insert(SysUser sysUser) {
+        return userMapper.insert(sysUser);
+    }
 }
