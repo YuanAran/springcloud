@@ -8,6 +8,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/sys_user")
 public class UserController {
@@ -15,12 +17,34 @@ public class UserController {
     private AuthClient authClient;
     @Autowired
     private DataBaseClient dataBaseClient;
+
+    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    public UserController(PasswordEncoder encoder){
+        this.passwordEncoder=encoder;
+    }
+    //修改密码
     @PostMapping("/updatePW")
-    public int updatePW(@RequestParam String password,@RequestHeader("Authorization") String token){
-        PasswordEncoder passwordEncoder=new BCryptPasswordEncoder();
+    public int updatePW(@RequestBody Map<String, String> body, @RequestHeader("Authorization") String token){
         UpdateRequest updateRequest=new UpdateRequest();
+        String password=body.get("password");
         updateRequest.setUsername(authClient.getUsername(token));
         updateRequest.setPassword(passwordEncoder.encode(password));
         return dataBaseClient.update(updateRequest);
+    }
+
+    //修改用户信息
+    @PostMapping("/update")
+    public int update(@RequestBody UpdateRequest updateRequest){
+        if (!updateRequest.getPassword().isEmpty()){
+            updateRequest.setPassword(passwordEncoder.encode(updateRequest.getPassword()));
+        }
+        return dataBaseClient.update(updateRequest);
+    }
+
+    //删除用户
+    @GetMapping("/delete")
+    public int delete(@RequestParam("username") String username){
+        return dataBaseClient.delete(username);
     }
 }

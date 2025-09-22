@@ -13,6 +13,8 @@
         <option value="$PROJECT_DIR$/database-provider/pom.xml" />
         <option value="$PROJECT_DIR$/sys_manage/pom.xml" />
         <option value="$PROJECT_DIR$/sys_manage/sys_user/pom.xml" />
+        <option value="$PROJECT_DIR$/common/pom.xml" />
+        <option value="$PROJECT_DIR$/common/common-security/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

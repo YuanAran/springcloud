@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com</groupId>
+    <groupId>sys_user</groupId>
     <artifactId>sys_user</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>sys_user</name>
@@ -14,11 +14,16 @@
         <spring-boot.version>2.3.12.RELEASE</spring-boot.version>
     </properties>
     <parent>
-        <groupId>com</groupId>
+        <groupId>sys_manage</groupId>
         <artifactId>sys_manage</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <dependencies>
+        <dependency>
+            <groupId>common-security</groupId>
+            <artifactId>common-security</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>

@@ -14,4 +14,7 @@ public interface DataBaseClient {
     int update(@RequestBody UpdateRequest updateRequest);
     @GetMapping("/db/selectByUname")
     LoginRequest selectByUname(@RequestParam("username") String username);
+
+    @GetMapping("/db/delete")
+    int delete(@RequestParam("username") String username);
 }
