@@ -1,17 +1,31 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <!-- 导航栏 -->
+    <el-menu
+      :default-active="$route.path"
+      class="el-menu-demo"
+      mode="horizontal"
+      @select="handleSelect"
+      background-color="#545c64"
+      text-color="#fff"
+      active-text-color="#ffd04b">
+      <el-menu-item index="/">首页</el-menu-item>
+      <el-menu-item index="/about">关于我们</el-menu-item>
+      <el-menu-item index="/login" class="login-menu-item">登录</el-menu-item>
+    </el-menu>
+
+    <!-- 路由出口 -->
+    <router-view/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  methods: {
+    handleSelect(key) {
+      this.$router.push(key)
+    }
   }
 }
 </script>
@@ -21,8 +35,19 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+}
+
+.el-menu-demo {
+  margin-bottom: 0;
+}
+
+.login-menu-item {
+  float: right;
+}
+
+body {
+  margin: 0;
+  padding: 0;
 }
 </style>
