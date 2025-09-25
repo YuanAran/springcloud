@@ -59,6 +59,9 @@
 </template>
 
 <script>
+import request from '@/utils/request'
+import { setToken } from '@/utils/auth'
+
 export default {
   name: 'LoginPage',
   data() {
@@ -82,19 +85,42 @@ export default {
     }
   },
   methods: {
-    handleLogin() {
-      this.$refs.loginForm.validate((valid) => {
+    async handleLogin() {
+      this.$refs.loginForm.validate(async (valid) => {
         if (valid) {
           this.loading = true
 
-          // 模拟登录请求
-          setTimeout(() => {
-            this.loading = false
-            this.$message.success('登录成功！')
+          try {
+            // 发送登录请求到后端
+            const response = await request.post('/auth/login', {
+              username: this.loginForm.username,
+              password: this.loginForm.password
+            })
 
-            // 登录成功后跳转到首页
-            this.$router.push('/')
-          }, 2000)
+            // 登录成功，保存token
+            if (response.token) {
+              setToken(response.token)
+              this.$message.success('登录成功！')
+
+              // 跳转到首页
+              this.$router.push('/')
+            } else {
+              this.$message.error('登录失败：未获取到token')
+            }
+
+          } catch (error) {
+            // 登录失败处理
+            console.error('登录错误：', error)
+
+            if (error.response && error.response.data && error.response.data.message) {
+              this.$message.error('登录失败：' + error.response.data.message)
+            } else {
+              this.$message.error('登录失败，请检查用户名和密码')
+            }
+          } finally {
+            this.loading = false
+          }
+
         } else {
           this.$message.error('请检查输入信息')
           return false
@@ -103,9 +129,7 @@ export default {
     },
 
     goToRegister() {
-      this.$message.info('注册功能待开发')
-      // 这里可以跳转到注册页面
-      // this.$router.push('/register')
+      this.$router.push('/register')
     }
   }
 }
