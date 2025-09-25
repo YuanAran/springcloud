@@ -102,8 +102,8 @@ export default {
               setToken(response.token)
               this.$message.success('登录成功！')
 
-              // 跳转到首页
-              this.$router.push('/')
+              // 跳转到系统首页
+              this.$router.push('/home/dashboard')
             } else {
               this.$message.error('登录失败：未获取到token')
             }
