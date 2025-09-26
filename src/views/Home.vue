@@ -15,6 +15,7 @@
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="profile">个人信息</el-dropdown-item>
+              <el-dropdown-item command="changePassword">修改密码</el-dropdown-item>
               <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -85,6 +86,9 @@ export default {
       switch (command) {
         case 'profile':
           this.$message.info('个人信息功能待开发')
+          break
+        case 'changePassword':
+          this.$router.push('/home/change-password')
           break
         case 'logout':
           this.logout()

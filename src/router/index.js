@@ -6,6 +6,7 @@ import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
 import UserManagement from '@/views/UserManagement.vue'
 import Dashboard from '@/views/Dashboard.vue'
+import ChangePassword from '@/views/ChangePassword.vue'
 import {getToken} from "@/utils/auth";
 
 Vue.use(VueRouter)
@@ -38,6 +39,12 @@ const routes = [
                 path: 'about',
                 name: 'AboutSystem',
                 component: About,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'change-password',
+                name: 'ChangePassword',
+                component: ChangePassword,
                 meta: { requiresAuth: true }
             }
         ]
