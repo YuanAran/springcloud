@@ -15,62 +15,76 @@
       </el-button>
 
       <div class="search-box">
-        <el-input
-          v-model="searchKeyword"
-          placeholder="搜索用户名或姓名"
-          prefix-icon="el-icon-search"
-          @input="handleSearch"
-          clearable>
-        </el-input>
+        <div class="custom-input-container">
+          <i class="el-icon-search search-icon"></i>
+          <input
+            type="text"
+            v-model="searchKeyword"
+            placeholder="搜索用户名或姓名"
+            @input="handleSearch"
+            class="custom-input">
+          <i class="el-icon-circle-close clear-icon" 
+             v-if="searchKeyword" 
+             @click="clearSearch"></i>
+        </div>
       </div>
     </div>
 
-    <!-- 用户表格 -->
-    <el-table
-      :data="filteredUsers"
-      v-loading="loading"
-      @selection-change="handleSelectionChange"
-      stripe
-      border
-      style="width: 100%">
+    <!-- 用户表格 - 使用原生HTML模拟Element UI样式 -->
+    <div class="custom-table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th class="selection-column">
+              <input type="checkbox" @change="selectAll" :checked="allSelected">
+            </th>
+            <th class="sortable" @click="sortBy('username')">
+              用户名
+              <i class="el-icon-caret-top" v-if="sortField === 'username' && sortOrder === 'asc'"></i>
+              <i class="el-icon-caret-bottom" v-if="sortField === 'username' && sortOrder === 'desc'"></i>
+            </th>
+            <th class="sortable" @click="sortBy('nickname')">
+              姓名
+              <i class="el-icon-caret-top" v-if="sortField === 'nickname' && sortOrder === 'asc'"></i>
+              <i class="el-icon-caret-bottom" v-if="sortField === 'nickname' && sortOrder === 'desc'"></i>
+            </th>
+            <th>性别</th>
+            <th class="sortable" @click="sortBy('createTime')">
+              创建时间
+              <i class="el-icon-caret-top" v-if="sortField === 'createTime' && sortOrder === 'asc'"></i>
+              <i class="el-icon-caret-bottom" v-if="sortField === 'createTime' && sortOrder === 'desc'"></i>
+            </th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="user in paginatedUsers" :key="user._id" :class="{selected: selectedUsers.includes(user)}">
+            <td class="selection-column">
+              <input type="checkbox" :value="user" v-model="selectedUsers">
+            </td>
+            <td>
+              <span class="username-tag">{{ user.username }}</span>
+            </td>
+            <td>{{ user.nickname }}</td>
+            <td>
+              <span :class="user.sex === 1 ? 'sex-tag female' : 'sex-tag male'">
+                {{ user.sex === 1 ? '女' : '男' }}
+              </span>
+            </td>
+            <td>{{ formatDate(user.createTime) }}</td>
+            <td class="action-column">
+              <button class="btn btn-primary" @click="showEditDialog(user)">
+                <i class="el-icon-edit"></i> 编辑
+              </button>
+              <button class="btn btn-danger" @click="deleteUser(user)">
+                <i class="el-icon-delete"></i> 删除
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-      <el-table-column type="selection" width="55"></el-table-column>
-
-      <el-table-column prop="id" label="ID" width="80" sortable></el-table-column>
-
-      <el-table-column prop="username" label="用户名" width="150" sortable>
-        <template slot-scope="scope">
-          <el-tag size="small">{{ scope.row.username }}</el-tag>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="nickname" label="姓名" width="120" sortable></el-table-column>
-
-      <el-table-column prop="sex" label="性别" width="80">
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.sex === 0 ? 'primary' : 'success'" size="small">
-            {{ scope.row.sex === 0 ? '男' : '女' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="createTime" label="创建时间" width="180" sortable>
-        <template slot-scope="scope">
-          {{ formatDate(scope.row.createTime) }}
-        </template>
-      </el-table-column>
-
-      <el-table-column label="操作" width="200" fixed="right">
-        <template slot-scope="scope">
-          <el-button size="mini" type="primary" icon="el-icon-edit" @click="showEditDialog(scope.row)">
-            编辑
-          </el-button>
-          <el-button size="mini" type="danger" icon="el-icon-delete" @click="deleteUser(scope.row)">
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
 
     <!-- 分页 -->
     <div class="pagination">
@@ -176,13 +190,30 @@ export default {
         sex: [
           { required: true, message: '请选择性别', trigger: 'change' }
         ]
-      }
+      },
+
+      // 表格key属性
+      tableKey: 0,
+      
+      // 排序相关
+      sortField: '',
+      sortOrder: 'asc',
+      
+      // 全选状态
+      allSelected: false
     }
   },
 
   computed: {
     dialogTitle() {
       return this.isEdit ? '编辑用户' : '新增用户'
+    },
+    
+    // 分页后的用户数据
+    paginatedUsers() {
+      const start = (this.currentPage - 1) * this.pageSize
+      const end = start + this.pageSize
+      return this.filteredUsers.slice(start, end)
     }
   },
 
@@ -195,25 +226,68 @@ export default {
     async fetchUsers() {
       this.loading = true
       try {
-        const response = await request.get('/user/list', {
+        const response = await request.get('/sys_user/getList', {
           params: {
             page: this.currentPage,
             size: this.pageSize
           }
         })
 
-        if (response.data) {
-          this.users = response.data
-          this.totalUsers = response.total || response.data.length
-          this.filterUsers()
-        } else {
-          // 如果后端还没有实现，使用模拟数据
-          this.users = this.getMockUsers()
-          this.totalUsers = this.users.length
-          this.filterUsers()
+        console.log('获取用户列表成功，response:', response)
+        console.log('用户数据长度:', response.length)
+
+        // 检查第一个用户对象的字段结构
+        if (response && response.length > 0) {
+          const firstUser = response[0]
+          console.log('=== 第一个用户对象的字段分析 ===')
+          console.log('第一个用户完整对象:', firstUser)
+          console.log('所有字段名:', Object.keys(firstUser))
+          console.log('username字段:', firstUser.username)
+          console.log('nickname字段:', firstUser.nickname)
+          console.log('sex字段:', firstUser.sex)
+          console.log('createTime字段:', firstUser.createTime)
+          console.log('userId字段:', firstUser.userId)
+          console.log('id字段:', firstUser.id)
         }
+
+        // 处理用户数据，为每个用户添加唯一标识符
+        let processedUsers = []
+        if (response && Array.isArray(response)) {
+          processedUsers = response.map((user, index) => {
+            // 为每个用户添加唯一标识符，解决Element UI表格渲染问题
+            return {
+              ...user,
+              _id: `user_${index}_${Date.now()}`, // 添加唯一的_id
+              userId: user.userId || (index + 1), // 如果userId为null，使用索引+1作为备用
+              // 确保所有必要字段都存在
+              username: user.username || '',
+              nickname: user.nickname || '',
+              sex: user.sex !== undefined ? user.sex : 0,
+              createTime: user.createTime || ''
+            }
+          })
+        }
+
+        console.log('处理后的用户数据:', processedUsers)
+        console.log('处理后数据长度:', processedUsers.length)
+
+        // 使用处理后的数据
+        this.users = processedUsers
+        this.totalUsers = processedUsers.length
+        this.filterUsers()
+
+        // 强制更新表格
+        this.tableKey++
+        this.$nextTick(() => {
+          console.log('表格渲染状态检查：', this.filteredUsers.length)
+          if (this.filteredUsers.length > 0) {
+            console.log('filteredUsers第一个元素:', this.filteredUsers[0])
+          }
+        })
       } catch (error) {
         console.error('获取用户列表失败：', error)
+        console.error('错误详情：', error.response || error.message)
+        this.$message.error('获取用户列表失败，使用模拟数据演示')
         // 使用模拟数据
         this.users = this.getMockUsers()
         this.totalUsers = this.users.length
@@ -223,27 +297,65 @@ export default {
       }
     },
 
-    // 模拟数据（用于演示）
+    // 模拟数据（用于演示）- 使用与后端相同的字段结构
     getMockUsers() {
       return [
-        { id: 1, username: 'admin', nickname: '管理员', sex: 0, createTime: '2024-01-01 10:00:00' },
-        { id: 2, username: 'user1', nickname: '张三', sex: 0, createTime: '2024-01-02 11:00:00' },
-        { id: 3, username: 'user2', nickname: '李四', sex: 1, createTime: '2024-01-03 12:00:00' },
-        { id: 4, username: 'user3', nickname: '王五', sex: 0, createTime: '2024-01-04 13:00:00' },
-        { id: 5, username: 'user4', nickname: '赵六', sex: 1, createTime: '2024-01-05 14:00:00' }
+        {
+          userId: 1,
+          username: 'admin',
+          nickname: '管理员',
+          sex: 0,
+          createTime: '2024-01-01T10:00:00.000+00:00'
+        },
+        {
+          userId: 2,
+          username: 'yuan',
+          nickname: '穆茂原',
+          sex: 0,
+          createTime: '2025-09-22T08:22:18.424+00:00'
+        },
+        {
+          userId: 3,
+          username: 'user2',
+          nickname: '李四',
+          sex: 1,
+          createTime: '2024-01-03T12:00:00.000+00:00'
+        },
+        {
+          userId: 4,
+          username: 'user3',
+          nickname: '王五',
+          sex: 0,
+          createTime: '2024-01-04T13:00:00.000+00:00'
+        },
+        {
+          userId: 5,
+          username: 'user4',
+          nickname: '赵六',
+          sex: 1,
+          createTime: '2024-01-05T14:00:00.000+00:00'
+        }
       ]
     },
 
     // 搜索过滤
     filterUsers() {
-      if (!this.searchKeyword) {
-        this.filteredUsers = this.users
+      console.log('开始过滤用户，searchKeyword：', this.searchKeyword)
+      console.log('原始users数组长度：', this.users.length)
+
+      if (!this.searchKeyword || this.searchKeyword.trim() === '') {
+        this.filteredUsers = [...this.users]  // 创建副本避免引用问题
       } else {
-        this.filteredUsers = this.users.filter(user =>
-          user.username.toLowerCase().includes(this.searchKeyword.toLowerCase()) ||
-          user.nickname.includes(this.searchKeyword)
-        )
+        const keyword = this.searchKeyword.toLowerCase().trim()
+        this.filteredUsers = this.users.filter(user => {
+          const username = user.username ? user.username.toLowerCase() : ''
+          const nickname = user.nickname ? user.nickname : ''
+          return username.includes(keyword) || nickname.includes(keyword)
+        })
       }
+
+      console.log('过滤后filteredUsers数组长度：', this.filteredUsers.length)
+      console.log('过滤后的数据：', this.filteredUsers)
     },
 
     // 搜索处理
@@ -280,7 +392,7 @@ export default {
       this.isEdit = true
       this.dialogVisible = true
       this.userForm = {
-        id: user.id,
+        id: user.userId,  // 使用userId字段
         username: user.username,
         password: '',
         nickname: user.nickname,
@@ -362,12 +474,15 @@ export default {
         type: 'warning'
       }).then(async () => {
         try {
-          await request.delete(`/user/delete/${user.id}`)
+          await request.delete(`/user/delete/${user.userId}`)  // 使用userId字段
           this.$message.success('用户删除成功')
           this.fetchUsers()
         } catch (error) {
           this.$message.error('用户删除失败：' + (error.response?.data?.message || '请检查网络连接'))
         }
+      }).catch(() => {
+        // 用户取消删除，不需要做任何操作
+        console.log('用户取消删除操作')
       })
     },
 
@@ -380,13 +495,16 @@ export default {
         type: 'warning'
       }).then(async () => {
         try {
-          const ids = this.selectedUsers.map(user => user.id)
+          const ids = this.selectedUsers.map(user => user.userId)  // 使用userId字段
           await request.post('/user/batch-delete', { ids })
           this.$message.success('批量删除成功')
           this.fetchUsers()
         } catch (error) {
           this.$message.error('批量删除失败：' + (error.response?.data?.message || '请检查网络连接'))
         }
+      }).catch(() => {
+        // 用户取消批量删除，不需要做任何操作
+        console.log('用户取消批量删除操作')
       })
     },
 
@@ -394,7 +512,60 @@ export default {
     formatDate(dateString) {
       if (!dateString) return '-'
       const date = new Date(dateString)
-      return date.toLocaleString('zh-CN')
+      // 检查日期是否有效
+      if (isNaN(date.getTime())) return '-'
+
+      // 格式化为 YYYY-MM-DD HH:mm:ss
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      const seconds = String(date.getSeconds()).padStart(2, '0')
+
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+    },
+    
+    // 排序功能
+    sortBy(field) {
+      if (this.sortField === field) {
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
+      } else {
+        this.sortField = field
+        this.sortOrder = 'asc'
+      }
+      
+      this.filteredUsers.sort((a, b) => {
+        let aVal = a[field]
+        let bVal = b[field]
+        
+        if (field === 'createTime') {
+          aVal = new Date(aVal)
+          bVal = new Date(bVal)
+        }
+        
+        if (this.sortOrder === 'asc') {
+          return aVal > bVal ? 1 : -1
+        } else {
+          return aVal < bVal ? 1 : -1
+        }
+      })
+    },
+    
+    // 全选功能
+    selectAll(event) {
+      if (event.target.checked) {
+        this.selectedUsers = [...this.paginatedUsers]
+      } else {
+        this.selectedUsers = []
+      }
+      this.allSelected = event.target.checked
+    },
+    
+    // 清空搜索
+    clearSearch() {
+      this.searchKeyword = ''
+      this.handleSearch()
     }
   }
 }
@@ -449,6 +620,182 @@ export default {
 
 .dialog-footer {
   text-align: right;
+}
+
+/* 自定义表格样式 */
+.custom-table-container {
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  font-size: 14px;
+}
+
+.custom-table th {
+  background-color: #f5f7fa;
+  color: #909399;
+  font-weight: 500;
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid #ebeef5;
+  border-right: 1px solid #ebeef5;
+}
+
+.custom-table th:last-child {
+  border-right: none;
+}
+
+.custom-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-table th.sortable:hover {
+  background-color: #e6f7ff;
+}
+
+.custom-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #ebeef5;
+  border-right: 1px solid #ebeef5;
+  color: #606266;
+}
+
+.custom-table td:last-child {
+  border-right: none;
+}
+
+.custom-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.custom-table tr:hover {
+  background-color: #f5f7fa;
+}
+
+.custom-table tr.selected {
+  background-color: #ecf5ff;
+}
+
+.selection-column {
+  width: 55px;
+  text-align: center;
+}
+
+.username-tag {
+  background-color: #f0f9ff;
+  color: #1890ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.sex-tag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.sex-tag.male {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.sex-tag.female {
+  background-color: #f6ffed;
+  color: #52c41a;
+}
+
+.action-column {
+  width: 200px;
+}
+
+.btn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-primary {
+  background-color: #409eff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #66b1ff;
+}
+
+.btn-danger {
+  background-color: #f56c6c;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #f78989;
+}
+
+/* 自定义搜索输入框样式 */
+.custom-input-container {
+  position: relative;
+  display: inline-block;
+  width: 240px;
+}
+
+.custom-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 30px 0 30px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #606266;
+  background-color: #fff;
+  outline: none;
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.custom-input:focus {
+  border-color: #409eff;
+}
+
+.custom-input::placeholder {
+  color: #c0c4cc;
+}
+
+.search-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #c0c4cc;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.clear-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #c0c4cc;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.clear-icon:hover {
+  color: #909399;
 }
 
 /* 响应式设计 */
