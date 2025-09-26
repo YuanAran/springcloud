@@ -455,7 +455,8 @@ export default {
     // 更新用户
     async updateUser() {
       try {
-        await request.put(`/user/update/${this.userForm.id}`, {
+        await request.post('/sys_user/update', {
+          userId: this.userForm.id,
           nickname: this.userForm.nickname,
           sex: this.userForm.sex
         })
@@ -466,46 +467,63 @@ export default {
       }
     },
 
-    // 删除用户
-    deleteUser(user) {
-      this.$confirm(`确定要删除用户 "${user.username}" 吗？`, '提示', {
+    // 统一删除方法（支持单删和批量删除）
+    async deleteUsers(users) {
+      const userList = Array.isArray(users) ? users : [users]
+      const usernames = userList.map(user => user.username)
+      const displayNames = usernames.join('、')
+      
+      const confirmMessage = userList.length === 1 
+        ? `确定要删除用户 "${displayNames}" 吗？`
+        : `确定要删除选中的 ${userList.length} 个用户吗？\n用户：${displayNames}`
+      
+      const title = userList.length === 1 ? '删除用户' : '批量删除'
+      
+      this.$confirm(confirmMessage, title, {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
         try {
-          await request.delete(`/user/delete/${user.userId}`)  // 使用userId字段
-          this.$message.success('用户删除成功')
+          // 发送用户名列表到后端
+          await request.post('/sys_user/delete', { usernames })
+          
+          const successMessage = userList.length === 1 
+            ? '用户删除成功' 
+            : `批量删除成功，共删除 ${userList.length} 个用户`
+          
+          this.$message.success(successMessage)
           this.fetchUsers()
+          
+          // 如果是批量删除，清空选中状态
+          if (userList.length > 1) {
+            this.selectedUsers = []
+            this.allSelected = false
+          }
         } catch (error) {
-          this.$message.error('用户删除失败：' + (error.response?.data?.message || '请检查网络连接'))
+          const errorMessage = userList.length === 1 
+            ? '用户删除失败：' 
+            : '批量删除失败：'
+          this.$message.error(errorMessage + (error.response?.data?.message || '请检查网络连接'))
         }
       }).catch(() => {
         // 用户取消删除，不需要做任何操作
         console.log('用户取消删除操作')
       })
     },
+    
+    // 删除单个用户
+    deleteUser(user) {
+      this.deleteUsers(user)
+    },
 
     // 批量删除
     batchDelete() {
-      const usernames = this.selectedUsers.map(user => user.username).join('、')
-      this.$confirm(`确定要删除选中的 ${this.selectedUsers.length} 个用户吗？\n用户：${usernames}`, '批量删除', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
-        try {
-          const ids = this.selectedUsers.map(user => user.userId)  // 使用userId字段
-          await request.post('/user/batch-delete', { ids })
-          this.$message.success('批量删除成功')
-          this.fetchUsers()
-        } catch (error) {
-          this.$message.error('批量删除失败：' + (error.response?.data?.message || '请检查网络连接'))
-        }
-      }).catch(() => {
-        // 用户取消批量删除，不需要做任何操作
-        console.log('用户取消批量删除操作')
-      })
+      if (this.selectedUsers.length === 0) {
+        this.$message.warning('请选择要删除的用户')
+        return
+      }
+      this.deleteUsers(this.selectedUsers)
     },
 
     // 格式化日期
