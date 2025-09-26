@@ -7,6 +7,10 @@ import com.authserver.until.JwtUntil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -19,11 +23,30 @@ public class AuthController {
        this.passwordEncoder=encoder;
    }
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest){
-        LoginRequest loginRequest1=databaseClient.selectByUname(loginRequest.getUsername());
-        if (loginRequest1==null) return "用户不存在";
-        if (!passwordEncoder.matches(loginRequest.getPassword(),loginRequest1.getPassword())) return "密码错误";
-        return JwtUntil.generateToken(loginRequest.getUsername());}
+    public Map<String,Object> login(@RequestBody LoginRequest loginRequest){
+        Map<String,Object> map = new HashMap<>();
+
+        // 查询用户
+        LoginRequest userFromDb = databaseClient.selectByUname(loginRequest.getUsername());
+        if (userFromDb == null) {
+            map.put("mes", "用户不存在");
+            return map;
+        }
+
+        // 验证密码
+        if (!passwordEncoder.matches(loginRequest.getPassword(), userFromDb.getPassword())) {
+            map.put("mes", "密码错误");
+            return map;
+        }
+
+        // 登录成功，生成token
+        String token = JwtUntil.generateToken(loginRequest.getUsername());
+        map.put("token", token);
+        map.put("mes", "登录成功");
+
+        return map;
+    }
+
 
 
     @PostMapping("/register")
