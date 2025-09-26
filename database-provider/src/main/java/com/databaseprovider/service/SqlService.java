@@ -2,9 +2,11 @@ package com.databaseprovider.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.databaseprovider.mapper.UserMapper;
-import com.databaseprovider.pojo.SysUser;
+import com.commonentity.pojo.SysUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class SqlService {
@@ -30,9 +32,20 @@ public class SqlService {
     }
 
     //删除用户
-    public int delete(String username) {
-        QueryWrapper<SysUser> wrapper =new QueryWrapper<SysUser>()
-                .eq("username",username);
-        return userMapper.delete(wrapper);
+    public int delete(List<String> usernames) {
+        int totalDeleted = 0;
+        for (String username : usernames) {
+            QueryWrapper<SysUser> wrapper = new QueryWrapper<SysUser>()
+                    .eq("username", username);
+            totalDeleted += userMapper.delete(wrapper);
+        }
+        return totalDeleted;
+    }
+
+    //获取全部用户
+    public List<SysUser> selectList(){
+        QueryWrapper<SysUser> wrapper = new QueryWrapper<SysUser>()
+                .select("username", "nickname", "sex", "create_time");
+        return userMapper.selectList(wrapper);
     }
 }

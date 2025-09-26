@@ -12,6 +12,7 @@
         <module name="gateway-server" />
         <module name="eureka-server" />
         <module name="database-provider" />
+        <module name="common-entity" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

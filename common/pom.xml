@@ -20,6 +20,7 @@
     </parent>
     <modules>
         <module>common-security</module>
+        <module>common-entity</module>
     </modules>
     <packaging>pom</packaging>
     <dependencies>

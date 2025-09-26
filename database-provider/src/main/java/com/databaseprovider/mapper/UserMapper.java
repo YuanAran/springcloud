@@ -1,7 +1,7 @@
 package com.databaseprovider.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.databaseprovider.pojo.SysUser;
+import com.commonentity.pojo.SysUser;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

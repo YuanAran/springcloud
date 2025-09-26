@@ -2,7 +2,7 @@ package com.databaseprovider.controller;
 
 import com.databaseprovider.entity.LoginRequest;
 import com.databaseprovider.entity.UpdateRequest;
-import com.databaseprovider.pojo.SysUser;
+import com.commonentity.pojo.SysUser;
 import com.databaseprovider.service.SqlService;
 import com.databaseprovider.until.BeanCopyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -47,8 +48,10 @@ public class DbController {
         return sqlService.update(sysUser,sysUser.getUsername());
     }
 
-    @GetMapping("/delete")
-    public int delete(@RequestParam("username") String username) {
-        return sqlService.delete(username);
+    @PostMapping("/delete")
+    public int delete(@RequestBody List<String> usernames) {
+        return sqlService.delete(usernames);
     }
+    @GetMapping("/selectList")
+    public List<SysUser> selectList(){return sqlService.selectList();}
 }
