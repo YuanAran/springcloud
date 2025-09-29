@@ -38,6 +38,7 @@
             <th class="selection-column">
               <input type="checkbox" @change="selectAll" :checked="allSelected">
             </th>
+            <th>username</th>
             <th class="sortable" @click="sortBy('username')">
               用户名
               <i class="el-icon-caret-top" v-if="sortField === 'username' && sortOrder === 'asc'"></i>
@@ -62,6 +63,7 @@
             <td class="selection-column">
               <input type="checkbox" :value="user" v-model="selectedUsers">
             </td>
+            <td>{{ user.username }}</td>
             <td>
               <span class="username-tag">{{ user.username }}</span>
             </td>
@@ -439,7 +441,7 @@ export default {
     // 创建用户
     async createUser() {
       try {
-        await request.post('/user/create', {
+        await request.post('/sys_user/insert', {
           username: this.userForm.username,
           password: this.userForm.password,
           nickname: this.userForm.nickname,
@@ -455,12 +457,21 @@ export default {
     // 更新用户
     async updateUser() {
       try {
-        await request.post('/sys_user/update', {
+        const result = await request.post('/sys_user/update', {
           userId: this.userForm.id,
+          username: this.userForm.username,
           nickname: this.userForm.nickname,
           sex: this.userForm.sex
         })
-        this.$message.success('用户更新成功')
+        // 后端返回int：非0成功，0失败
+        const code = typeof result === 'number' ? result : 0
+        if (code !== 0) {
+          this.$message.success('用户更新成功')
+        } else {
+          this.$message.error('用户更新失败')
+          // 抛出错误以便submitForm捕获并保持对话框不关闭
+          throw new Error('UPDATE_FAILED')
+        }
       } catch (error) {
         this.$message.error('用户更新失败：' + (error.response?.data?.message || '请检查网络连接'))
         throw error
@@ -485,8 +496,8 @@ export default {
         type: 'warning'
       }).then(async () => {
         try {
-          // 发送用户名列表到后端
-          await request.post('/sys_user/delete', { usernames })
+          // 发送字符串数组到后端，如 ['u1', 'u2']
+          await request.post('/sys_user/delete', usernames)
           
           const successMessage = userList.length === 1 
             ? '用户删除成功' 
