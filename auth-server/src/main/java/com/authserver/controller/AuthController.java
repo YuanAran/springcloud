@@ -1,9 +1,9 @@
 package com.authserver.controller;
 
 import com.authserver.entity.LoginRequest;
-import com.authserver.entity.RegisterRequest;
 import com.authserver.feign.DatabaseClient;
 import com.authserver.until.JwtUntil;
+import com.commonentity.pojo.SysUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -50,12 +50,10 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest registerRequest){
-        if (databaseClient.selectByUname(registerRequest.getUsername())!=null) return "用户已存在";
-        int result=databaseClient.insert(registerRequest.getUsername()
-                ,passwordEncoder.encode(registerRequest.getPassword())
-                ,registerRequest.getSex()
-                ,registerRequest.getNickname());
+    public String register(@RequestBody SysUser sysUser){
+        System.out.println(sysUser.getPassword());
+        if (databaseClient.selectByUname(sysUser.getUsername())!=null) return "用户已存在";
+        int result=databaseClient.insert(sysUser);
         if (result==0) return "注册失败";
         return "注册成功";
     }

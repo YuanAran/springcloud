@@ -10,6 +10,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,23 +23,19 @@ public class DbController {
     @GetMapping("/selectByUname")
     public LoginRequest selectByUname(@RequestParam("username") String username) {
         LoginRequest loginRequest=new LoginRequest();
-        PasswordEncoder encoder=new BCryptPasswordEncoder();
         SysUser sysUser=sqlService.selectByUname(username);
         if(sysUser==null)return null;
         loginRequest.setUsername(sysUser.getUsername());
         loginRequest.setPassword(sysUser.getPassword());
         return loginRequest;
     }
-    @GetMapping("/insert")
-    public int insert(@RequestParam("username") String username,@RequestParam("password") String password ,@RequestParam("sex") long sex,@RequestParam("nickname") String nickname) {
-        SysUser sysUser=new SysUser();
+    @PostMapping("/insert")
+    public int insert(@RequestBody SysUser sysUser) {
+        PasswordEncoder encoder=new BCryptPasswordEncoder();
         UUID uuid=UUID.randomUUID();
+        sysUser.setPassword(encoder.encode(sysUser.getPassword()));
         sysUser.setUserId(uuid.toString().replace("-",""));
-        sysUser.setUsername(username);
-        sysUser.setPassword(password);
-        sysUser.setSex(sex);
-        sysUser.setCreateTime(new java.sql.Timestamp(new java.util.Date().getTime()));
-        sysUser.setNickname( nickname);
+        sysUser.setCreateTime(new Timestamp(new Date().getTime()));
         return sqlService.insert(sysUser);
     }
 

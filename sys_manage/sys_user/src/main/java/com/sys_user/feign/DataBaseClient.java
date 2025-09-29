@@ -23,4 +23,7 @@ public interface DataBaseClient {
 
     @GetMapping("/db/selectList")
     List<SysUser> selectList();
+
+    @PostMapping("/db/insert")
+    int insert(SysUser sysUser);
 }

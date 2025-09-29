@@ -39,7 +39,7 @@ public class UserController {
     //修改用户信息
     @PostMapping("/update")
     public int update(@RequestBody UpdateRequest updateRequest) {
-        if (!updateRequest.getPassword().isEmpty()) {
+        if (updateRequest.getPassword()!=null) {
             updateRequest.setPassword(passwordEncoder.encode(updateRequest.getPassword()));
         }
         return dataBaseClient.update(updateRequest);
@@ -54,5 +54,10 @@ public class UserController {
     @GetMapping("/getList")
     public List<SysUser> selectList() {
         return dataBaseClient.selectList();
+    }
+
+    @PostMapping("/insert")
+    public int insert(@RequestBody SysUser sysUser){
+        return dataBaseClient.insert(sysUser);
     }
 }
