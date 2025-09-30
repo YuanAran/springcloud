@@ -1,8 +1,8 @@
 package com.authserver.controller;
 
-import com.authserver.entity.LoginRequest;
 import com.authserver.feign.DatabaseClient;
 import com.authserver.until.JwtUntil;
+import com.commonentity.entity.LoginRequest;
 import com.commonentity.pojo.SysUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;

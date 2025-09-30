@@ -1,6 +1,6 @@
 package com.databaseprovider.controller;
 
-import com.databaseprovider.entity.LoginRequest;
+import com.commonentity.entity.LoginRequest;
 import com.databaseprovider.entity.UpdateRequest;
 import com.commonentity.pojo.SysUser;
 import com.databaseprovider.service.SqlService;

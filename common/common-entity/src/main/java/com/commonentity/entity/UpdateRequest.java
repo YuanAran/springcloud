@@ -1,4 +1,4 @@
-package com.sys_user.entity;
+package com.commonentity.entity;
 
 import lombok.Data;
 

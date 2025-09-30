@@ -1,6 +1,6 @@
 package com.authserver.feign;
 
-import com.authserver.entity.LoginRequest;
+import com.commonentity.entity.LoginRequest;
 import com.commonentity.pojo.SysUser;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

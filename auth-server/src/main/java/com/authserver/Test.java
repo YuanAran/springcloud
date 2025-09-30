@@ -1,8 +1,5 @@
 package com.authserver;
 
-import com.authserver.controller.AuthController;
-import com.authserver.entity.LoginRequest;
-import com.authserver.until.JwtUntil;
 import lombok.Data;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;

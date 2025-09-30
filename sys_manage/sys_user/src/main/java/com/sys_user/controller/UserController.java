@@ -1,6 +1,6 @@
 package com.sys_user.controller;
 
-import com.sys_user.entity.UpdateRequest;
+import com.commonentity.entity.UpdateRequest;
 import com.sys_user.feign.AuthClient;
 import com.sys_user.feign.DataBaseClient;
 import org.springframework.beans.factory.annotation.Autowired;

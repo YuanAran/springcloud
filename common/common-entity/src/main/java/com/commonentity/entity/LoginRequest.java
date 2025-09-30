@@ -1,4 +1,4 @@
-package com.authserver.entity;
+package com.commonentity.entity;
 
 import lombok.Data;
 

@@ -1,8 +1,8 @@
 package com.sys_user.feign;
 
+import com.commonentity.entity.LoginRequest;
+import com.commonentity.entity.UpdateRequest;
 import com.commonentity.pojo.SysUser;
-import com.sys_user.entity.LoginRequest;
-import com.sys_user.entity.UpdateRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
