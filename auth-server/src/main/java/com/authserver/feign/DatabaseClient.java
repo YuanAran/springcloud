@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient("database-provider")
 public interface DatabaseClient {
-    @GetMapping("/db/selectByUname")
+    @GetMapping("/db/user/selectByUname")
     LoginRequest selectByUname(@RequestParam("username") String username);
-    @PostMapping("/db/insert")
+    @PostMapping("/db/user/insert")
     int insert(@RequestBody SysUser sysUser);
 }

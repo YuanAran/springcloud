@@ -13,17 +13,17 @@ import java.util.List;
 
 @FeignClient("database-provider")
 public interface DataBaseClient {
-    @PostMapping("/db/update")
+    @PostMapping("/db/user/update")
     int update(@RequestBody UpdateRequest updateRequest);
-    @GetMapping("/db/selectByUname")
+    @GetMapping("/db/user/selectByUname")
     LoginRequest selectByUname(@RequestParam("username") String username);
 
-    @PostMapping("/db/delete")
+    @PostMapping("/db/user/delete")
     int delete(@RequestBody List<String> usernames);
 
-    @GetMapping("/db/selectList")
+    @GetMapping("/db/user/selectList")
     List<SysUser> selectList();
 
-    @PostMapping("/db/insert")
+    @PostMapping("/db/user/insert")
     int insert(SysUser sysUser);
 }

@@ -1,7 +1,7 @@
 package com.databaseprovider.controller;
 
 import com.commonentity.entity.LoginRequest;
-import com.databaseprovider.entity.UpdateRequest;
+import com.commonentity.entity.UpdateRequest;
 import com.commonentity.pojo.SysUser;
 import com.databaseprovider.service.SqlService;
 import com.databaseprovider.until.BeanCopyUtils;
@@ -15,8 +15,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+
+//用户的crud
 @RestController
-@RequestMapping("/db")
+@RequestMapping("/db/user")
 public class DbController {
     @Autowired
     private SqlService sqlService;
