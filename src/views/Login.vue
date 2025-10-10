@@ -60,7 +60,7 @@
 
 <script>
 import request from '@/utils/request'
-import { setToken } from '@/utils/auth'
+import { setToken, setUserId } from '@/utils/auth'
 
 export default {
   name: 'LoginPage',
@@ -97,9 +97,12 @@ export default {
               password: this.loginForm.password
             })
 
-            // 登录成功，保存token
+            // 登录成功，保存token 与 userId
             if (response.token) {
               setToken(response.token)
+              if (response.userId !== undefined && response.userId !== null) {
+                setUserId(response.userId)
+              }
               this.$message.success('登录成功！')
 
               // 跳转到系统首页

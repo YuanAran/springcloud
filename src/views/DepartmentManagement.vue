@@ -156,7 +156,7 @@
         </el-form-item>
 
         <el-form-item label="部门编码" prop="code">
-          <el-input v-model="departmentForm.code" placeholder="请输入部门编码"></el-input>
+          <el-input v-model="departmentForm.code" placeholder="自动生成" disabled></el-input>
         </el-form-item>
 
         <el-form-item label="状态" prop="status">
@@ -188,6 +188,7 @@
 
 <script>
 import request from '@/utils/request'
+import { getUserId } from '@/utils/auth'
 
 export default {
   name: 'DepartmentManagement',
@@ -223,7 +224,6 @@ export default {
         ],
         code: [
           { required: true, message: '请输入部门编码', trigger: 'blur' },
-          { min: 2, max: 10, message: '部门编码长度在 2 到 10 个字符', trigger: 'blur' },
           { pattern: /^[A-Z0-9]+$/, message: '部门编码只能包含大写字母和数字', trigger: 'blur' }
         ],
         status: [
@@ -286,6 +286,107 @@ export default {
         if (d.children && d.children.length) stack.push(...d.children)
       }
       return ''
+    },
+
+    // 通过ID获取节点
+    getDeptById(id) {
+      if (!id) return null
+      const stack = [...this.departments]
+      while (stack.length) {
+        const d = stack.shift()
+        if (d.id === id) return d
+        if (d.children && d.children.length) stack.push(...d.children)
+      }
+      return null
+    },
+
+    // 获取某父级下的直接子节点
+    getChildrenOf(parentId) {
+      const result = []
+      const stack = [...this.departments]
+      while (stack.length) {
+        const d = stack.shift()
+        if (d.parentId === parentId) result.push(d)
+        if (d.children && d.children.length) stack.push(...d.children)
+      }
+      return result
+    },
+
+    // 获取顶级节点
+    getTopLevelNodes() {
+      const result = []
+      const stack = [...this.departments]
+      while (stack.length) {
+        const d = stack.shift()
+        if (!d.parentId) result.push(d)
+        if (d.children && d.children.length) stack.push(...d.children)
+      }
+      return result
+    },
+
+    // 推断顶级编码的前缀与宽度（字母前缀 + 数字宽度），默认 LD + 3
+    inferTopLevelPattern(codes) {
+      let prefix = 'LD'
+      let width = 3
+      for (let i = 0; i < codes.length; i++) {
+        const code = codes[i] || ''
+        const m = code.match(/^(.*?)(\d+)$/)
+        if (m) {
+          prefix = m[1]
+          width = m[2].length
+          break
+        }
+      }
+      return { prefix, width }
+    },
+
+    // 生成下一个编码：根据父级和已有子级编码推断
+    generateNextDeptCode(parentId) {
+      if (parentId) {
+        const parent = this.getDeptById(parentId)
+        const siblings = this.getChildrenOf(parentId)
+        const parentCode = parent ? parent.code : ''
+        // 子段宽度：从已有子级中推断，否则默认3
+        let segWidth = 3
+        for (let i = 0; i < siblings.length; i++) {
+          const code = siblings[i].code || ''
+          if (code.startsWith(parentCode)) {
+            const seg = code.slice(parentCode.length)
+            const m = seg.match(/^(\d+)$/)
+            if (m) { segWidth = m[1].length; break }
+          }
+        }
+        // 找最大序号
+        let maxNum = 0
+        siblings.forEach(s => {
+          const code = s.code || ''
+          if (code.startsWith(parentCode)) {
+            const seg = code.slice(parentCode.length)
+            const m = seg.match(/^(\d+)$/)
+            if (m) {
+              const num = parseInt(m[1], 10)
+              if (!isNaN(num)) maxNum = Math.max(maxNum, num)
+            }
+          }
+        })
+        const nextNum = String(maxNum + 1).padStart(segWidth, '0')
+        return `${parentCode}${nextNum}`
+      } else {
+        // 顶级：基于已有顶级编码推断
+        const top = this.getTopLevelNodes()
+        const codes = top.map(t => t.code).filter(Boolean)
+        const { prefix, width } = this.inferTopLevelPattern(codes)
+        let maxNum = 0
+        codes.forEach(c => {
+          const m = c.match(/^(.*?)(\d+)$/)
+          if (m) {
+            const num = parseInt(m[2], 10)
+            if (!isNaN(num)) maxNum = Math.max(maxNum, num)
+          }
+        })
+        const nextNum = String(maxNum + 1).padStart(width, '0')
+        return `${prefix}${nextNum}`
+      }
     },
 
     // 获取部门列表
@@ -418,12 +519,13 @@ export default {
       this.dialogVisible = true
       const parentId = parentDepartment ? parentDepartment.id : null
       const parentName = parentDepartment ? parentDepartment.name : ''
+      const autoCode = this.generateNextDeptCode(parentId)
       this.departmentForm = {
         id: null,
         parentId,
         parentName,
         name: '',
-        code: '',
+        code: autoCode,
         status: 1,
         description: '',
         dept_ip: ''
@@ -498,7 +600,8 @@ export default {
           parentId: this.departmentForm.parentId,
           status: String(this.departmentForm.status),
           description: this.departmentForm.description,
-          dept_ip: this.departmentForm.dept_ip || ''
+          dept_ip: this.departmentForm.dept_ip || '',
+          createBy: (getUserId() !== undefined && getUserId() !== null) ? String(getUserId()) : null
         })
         this.$message.success('部门创建成功')
       } catch (error) {
@@ -510,14 +613,15 @@ export default {
     // 更新部门（包含 dept_ip 回传 与 parentId）
     async updateDepartment() {
       try {
-        await request.post('/sys_dept/addDept', {
+        await request.post('/sys_dept/updateDept', {
           deptId: this.departmentForm.id,
           deptName: this.departmentForm.name,
           deptCode: this.departmentForm.code,
           parentId: this.departmentForm.parentId,
           status: String(this.departmentForm.status),
           description: this.departmentForm.description,
-          dept_ip: this.departmentForm.dept_ip || ''
+          dept_ip: this.departmentForm.dept_ip || '',
+          updateBy: (getUserId() !== undefined && getUserId() !== null) ? String(getUserId()) : null
         })
         this.$message.success('部门更新成功')
       } catch (error) {
@@ -640,9 +744,10 @@ export default {
       this.handleSearch()
     },
 
-    // 选择上级部门时同步显示名称
+    // 选择上级部门时同步显示名称并重算编码
     onParentChange(val) {
       this.departmentForm.parentName = this.getDeptNameById(val)
+      this.departmentForm.code = this.generateNextDeptCode(val)
     }
   }
 }
