@@ -26,6 +26,11 @@ spring:
           predicates:
             - Path=/sys_user/**
 
+        - id: dept-service
+          uri: lb://dept-service
+          predicates:
+            - Path=/sys_dept/**
+
 eureka:
   client:
     service-uri:

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DeptService {
@@ -31,12 +32,16 @@ public class DeptService {
     }
 
     //新增部门
-    public int insert(SysDept sysDept) {
-        return deptMapper.insert(sysDept);
-    }
+    public int insert(SysDept sysDept) {return deptMapper.insert(sysDept);}
 
     //删除部门
     public int delete(List<String> deptIds) {
-        return deptMapper.deleteByIds(deptIds);
+        int totalDeleted = 0;
+        for (String deptId : deptIds) {
+            QueryWrapper<SysDept> wrapper = new QueryWrapper<SysDept>()
+                    .eq("dept_id", deptId);
+            totalDeleted += deptMapper.delete(wrapper);
+        }
+        return totalDeleted;
     }
 }
