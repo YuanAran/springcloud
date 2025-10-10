@@ -201,6 +201,11 @@ export default {
       selectedDepartments: [],
       searchKeyword: '',
 
+      // 本地排序计数（不传后端）
+      deptSort: 0,
+      // 只统计 code 长度不超过此阈值的部门（基于 'LD00100x' 的长度）
+      codeLengthThreshold: 'LD00100x'.length,
+
       // 对话框
       dialogVisible: false,
       isEdit: false,
@@ -324,6 +329,36 @@ export default {
       return result
     },
 
+    // 统计当前部门总数（包含所有层级）
+    countAllDepartments() {
+      let count = 0
+      const stack = [...this.departments]
+      while (stack.length) {
+        const d = stack.shift()
+        count += 1
+        if (d.children && d.children.length) stack.push(...d.children)
+      }
+      return count
+    },
+
+    // 判断是否参与排序统计（仅 code 长度 <= 阈值）
+    isEligibleCode(code) {
+      if (!code) return false
+      return String(code).length <= this.codeLengthThreshold
+    },
+
+    // 统计符合规则的部门数量
+    getEligibleDepartmentsCount() {
+      let count = 0
+      const stack = [...this.departments]
+      while (stack.length) {
+        const d = stack.shift()
+        if (this.isEligibleCode(d.code)) count += 1
+        if (d.children && d.children.length) stack.push(...d.children)
+      }
+      return count
+    },
+
     // 推断顶级编码的前缀与宽度（字母前缀 + 数字宽度），默认 LD + 3
     inferTopLevelPattern(codes) {
       let prefix = 'LD'
@@ -398,11 +433,14 @@ export default {
         const raw = Array.isArray(list) ? list : (list?.data || [])
         this.departments = this.normalizeDepartments(raw)
         this.tableKey++
+        // 初始化本地 deptSort 为当前符合规则的部门总量
+        this.deptSort = this.getEligibleDepartmentsCount()
       } catch (error) {
         console.error('获取部门列表失败，使用模拟数据：', error)
         const mockData = this.getMockDepartments()
         this.departments = mockData
         this.tableKey++
+        this.deptSort = this.getEligibleDepartmentsCount()
       } finally {
         this.loading = false
       }
@@ -594,7 +632,10 @@ export default {
     // 创建部门（包含 dept_ip 回传 与 parentId）
     async createDepartment() {
       try {
-        await request.post('/sys_dept/addDept', {
+        // 基于符合规则的数量计算排序
+        const base = this.getEligibleDepartmentsCount()
+        const nextSort = base + 1
+        const payload = {
           deptName: this.departmentForm.name,
           deptCode: this.departmentForm.code,
           parentId: this.departmentForm.parentId,
@@ -602,7 +643,16 @@ export default {
           description: this.departmentForm.description,
           dept_ip: this.departmentForm.dept_ip || '',
           createBy: (getUserId() !== undefined && getUserId() !== null) ? String(getUserId()) : null
-        })
+        }
+        // 仅当新 code 符合规则时，才传 deptSort
+        if (this.isEligibleCode(this.departmentForm.code)) {
+          payload.deptSort = nextSort
+        }
+        await request.post('/sys_dept/addDept', payload)
+        // 创建成功后，若新部门本身也参与统计，则更新本地计数
+        if (this.isEligibleCode(this.departmentForm.code)) {
+          this.deptSort = nextSort
+        }
         this.$message.success('部门创建成功')
       } catch (error) {
         this.$message.error('部门创建失败：' + (error.response?.data?.message || '请检查网络连接'))
@@ -639,6 +689,10 @@ export default {
       }).then(async () => {
         try {
           await request.post('/sys_dept/deleteDept', [department.id])
+          // 仅当该部门参与统计时，本地计数减一（不小于0）
+          if (this.isEligibleCode(department.code)) {
+            this.deptSort = Math.max(0, this.deptSort - 1)
+          }
           this.$message.success('部门删除成功')
           this.fetchDepartments()
         } catch (error) {
@@ -663,6 +717,9 @@ export default {
         try {
           const deptIds = this.selectedDepartments.map(dept => dept.id)
           await request.post('/sys_dept/deleteDept', deptIds)
+          // 仅统计符合规则的删除数量
+          const eligibleDeleted = this.selectedDepartments.filter(d => this.isEligibleCode(d.code)).length
+          this.deptSort = Math.max(0, this.deptSort - eligibleDeleted)
           this.$message.success(`批量删除成功，共删除 ${this.selectedDepartments.length} 个部门`)
           this.fetchDepartments()
           this.selectedDepartments = []
