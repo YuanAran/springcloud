@@ -30,61 +30,81 @@
       </div>
     </div>
 
-    <!-- 用户表格 - 使用原生HTML模拟Element UI样式 -->
-    <div class="custom-table-container">
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th class="selection-column">
-              <input type="checkbox" @change="selectAll" :checked="allSelected">
-            </th>
-            <th>username</th>
-            <th class="sortable" @click="sortBy('username')">
-              用户名
-              <i class="el-icon-caret-top" v-if="sortField === 'username' && sortOrder === 'asc'"></i>
-              <i class="el-icon-caret-bottom" v-if="sortField === 'username' && sortOrder === 'desc'"></i>
-            </th>
-            <th class="sortable" @click="sortBy('nickname')">
-              姓名
-              <i class="el-icon-caret-top" v-if="sortField === 'nickname' && sortOrder === 'asc'"></i>
-              <i class="el-icon-caret-bottom" v-if="sortField === 'nickname' && sortOrder === 'desc'"></i>
-            </th>
-            <th>性别</th>
-            <th class="sortable" @click="sortBy('createTime')">
-              创建时间
-              <i class="el-icon-caret-top" v-if="sortField === 'createTime' && sortOrder === 'asc'"></i>
-              <i class="el-icon-caret-bottom" v-if="sortField === 'createTime' && sortOrder === 'desc'"></i>
-            </th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in paginatedUsers" :key="user._id" :class="{selected: selectedUsers.includes(user)}">
-            <td class="selection-column">
-              <input type="checkbox" :value="user" v-model="selectedUsers">
-            </td>
-            <td>{{ user.username }}</td>
-            <td>
-              <span class="username-tag">{{ user.username }}</span>
-            </td>
-            <td>{{ user.nickname }}</td>
-            <td>
-              <span :class="user.sex === 1 ? 'sex-tag female' : 'sex-tag male'">
-                {{ user.sex === 1 ? '女' : '男' }}
-              </span>
-            </td>
-            <td>{{ formatDate(user.createTime) }}</td>
-            <td class="action-column">
-              <button class="btn btn-primary" @click="showEditDialog(user)">
-                <i class="el-icon-edit"></i> 编辑
-              </button>
-              <button class="btn btn-danger" @click="deleteUser(user)">
-                <i class="el-icon-delete"></i> 删除
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+    <!-- 用户表格 - 使用原生HTML + Element UI样式 -->
+    <div class="custom-table-wrapper">
+      <div class="table-container">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th class="selection-column">
+                <el-checkbox 
+                  :indeterminate="isIndeterminate"
+                  v-model="checkAll"
+                  @change="handleCheckAllChange">
+                </el-checkbox>
+              </th>
+              <th class="sortable" @click="sortBy('username')">
+                用户名
+                <i class="el-icon-caret-top" v-if="sortField === 'username' && sortOrder === 'asc'"></i>
+                <i class="el-icon-caret-bottom" v-if="sortField === 'username' && sortOrder === 'desc'"></i>
+              </th>
+              <th class="sortable" @click="sortBy('nickname')">
+                姓名
+                <i class="el-icon-caret-top" v-if="sortField === 'nickname' && sortOrder === 'asc'"></i>
+                <i class="el-icon-caret-bottom" v-if="sortField === 'nickname' && sortOrder === 'desc'"></i>
+              </th>
+              <th>性别</th>
+              <th class="sortable" @click="sortBy('createTime')">
+                创建时间
+                <i class="el-icon-caret-top" v-if="sortField === 'createTime' && sortOrder === 'asc'"></i>
+                <i class="el-icon-caret-bottom" v-if="sortField === 'createTime' && sortOrder === 'desc'"></i>
+              </th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in paginatedUsers" :key="user.id" 
+                :class="{ 'selected': selectedUsers.includes(user) }"
+                @click="toggleRowSelection(user)">
+              <td class="selection-column">
+                <el-checkbox 
+                  :value="selectedUsers.includes(user)"
+                  @change="toggleRowSelection(user)">
+                </el-checkbox>
+              </td>
+              <td>
+                <el-tag size="small" type="primary">{{ user.username }}</el-tag>
+              </td>
+              <td>{{ user.nickname }}</td>
+              <td>
+                <el-tag 
+                  :type="user.sex === 1 ? 'success' : 'primary'" 
+                  size="small">
+                  {{ user.sex === 1 ? '女' : '男' }}
+                </el-tag>
+              </td>
+              <td>{{ formatDate(user.createTime) }}</td>
+              <td class="action-column">
+                <el-button
+                  size="mini"
+                  type="primary"
+                  icon="el-icon-edit"
+                  @click.stop="showEditDialog(user)">
+                  编辑
+                </el-button>
+                <el-button
+                  size="mini"
+                  type="danger"
+                  icon="el-icon-delete"
+                  @click.stop="deleteUser(user)">
+                  删除
+                </el-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
 
@@ -201,8 +221,9 @@ export default {
       sortField: '',
       sortOrder: 'asc',
       
-      // 全选状态
-      allSelected: false
+      // 复选框状态
+      checkAll: false,
+      isIndeterminate: false
     }
   },
 
@@ -252,20 +273,21 @@ export default {
           console.log('id字段:', firstUser.id)
         }
 
-        // 处理用户数据，为每个用户添加唯一标识符
+        // 处理用户数据，确保Element UI表格能正确渲染
         let processedUsers = []
         if (response && Array.isArray(response)) {
           processedUsers = response.map((user, index) => {
             // 为每个用户添加唯一标识符，解决Element UI表格渲染问题
             return {
               ...user,
-              _id: `user_${index}_${Date.now()}`, // 添加唯一的_id
-              userId: user.userId || (index + 1), // 如果userId为null，使用索引+1作为备用
-              // 确保所有必要字段都存在
-              username: user.username || '',
-              nickname: user.nickname || '',
+              // 确保有唯一的key用于Vue的v-for渲染
+              id: user.userId || user.id || `temp_${index}_${Date.now()}`,
+              userId: user.userId || (index + 1),
+              // 确保所有必要字段都存在且不为undefined
+              username: user.username || `用户${index + 1}`,
+              nickname: user.nickname || `用户${index + 1}`,
               sex: user.sex !== undefined ? user.sex : 0,
-              createTime: user.createTime || ''
+              createTime: user.createTime || new Date().toISOString()
             }
           })
         }
@@ -299,10 +321,11 @@ export default {
       }
     },
 
-    // 模拟数据（用于演示）- 使用与后端相同的字段结构
+    // 模拟数据（用于演示）- 确保数据结构完整
     getMockUsers() {
       return [
         {
+          id: 1,
           userId: 1,
           username: 'admin',
           nickname: '管理员',
@@ -310,6 +333,7 @@ export default {
           createTime: '2024-01-01T10:00:00.000+00:00'
         },
         {
+          id: 2,
           userId: 2,
           username: 'yuan',
           nickname: '穆茂原',
@@ -317,6 +341,7 @@ export default {
           createTime: '2025-09-22T08:22:18.424+00:00'
         },
         {
+          id: 3,
           userId: 3,
           username: 'user2',
           nickname: '李四',
@@ -324,6 +349,7 @@ export default {
           createTime: '2024-01-03T12:00:00.000+00:00'
         },
         {
+          id: 4,
           userId: 4,
           username: 'user3',
           nickname: '王五',
@@ -331,6 +357,7 @@ export default {
           createTime: '2024-01-04T13:00:00.000+00:00'
         },
         {
+          id: 5,
           userId: 5,
           username: 'user4',
           nickname: '赵六',
@@ -363,11 +390,6 @@ export default {
     // 搜索处理
     handleSearch() {
       this.filterUsers()
-    },
-
-    // 选择变化
-    handleSelectionChange(selection) {
-      this.selectedUsers = selection
     },
 
     // 分页大小变化
@@ -581,20 +603,40 @@ export default {
       })
     },
     
-    // 全选功能
-    selectAll(event) {
-      if (event.target.checked) {
-        this.selectedUsers = [...this.paginatedUsers]
-      } else {
-        this.selectedUsers = []
-      }
-      this.allSelected = event.target.checked
-    },
-    
     // 清空搜索
     clearSearch() {
       this.searchKeyword = ''
       this.handleSearch()
+    },
+    
+    // 切换行选择
+    toggleRowSelection(user) {
+      const index = this.selectedUsers.indexOf(user)
+      if (index > -1) {
+        this.selectedUsers.splice(index, 1)
+      } else {
+        this.selectedUsers.push(user)
+      }
+      this.updateCheckAllStatus()
+    },
+    
+    // 全选/取消全选
+    handleCheckAllChange(val) {
+      if (val) {
+        this.selectedUsers = [...this.paginatedUsers]
+      } else {
+        this.selectedUsers = []
+      }
+      this.updateCheckAllStatus()
+    },
+    
+    // 更新全选状态
+    updateCheckAllStatus() {
+      const total = this.paginatedUsers.length
+      const selected = this.selectedUsers.length
+      
+      this.checkAll = selected === total && total > 0
+      this.isIndeterminate = selected > 0 && selected < total
     }
   }
 }
@@ -651,8 +693,12 @@ export default {
   text-align: right;
 }
 
-/* 自定义表格样式 */
-.custom-table-container {
+/* 自定义表格样式 - 模拟Element UI */
+.custom-table-wrapper {
+  margin-top: 16px;
+}
+
+.table-container {
   border: 1px solid #ebeef5;
   border-radius: 4px;
   overflow: hidden;
@@ -673,6 +719,7 @@ export default {
   text-align: left;
   border-bottom: 1px solid #ebeef5;
   border-right: 1px solid #ebeef5;
+  position: relative;
 }
 
 .custom-table th:last-child {
@@ -682,6 +729,7 @@ export default {
 .custom-table th.sortable {
   cursor: pointer;
   user-select: none;
+  transition: background-color 0.2s;
 }
 
 .custom-table th.sortable:hover {
@@ -716,62 +764,19 @@ export default {
   text-align: center;
 }
 
-.username-tag {
-  background-color: #f0f9ff;
-  color: #1890ff;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.sex-tag {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.sex-tag.male {
-  background-color: #e6f7ff;
-  color: #1890ff;
-}
-
-.sex-tag.female {
-  background-color: #f6ffed;
-  color: #52c41a;
-}
-
 .action-column {
   width: 200px;
+  text-align: center;
 }
 
-.btn {
-  padding: 4px 8px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+/* 操作按钮样式 */
+.el-button--mini {
+  padding: 5px 8px;
   font-size: 12px;
-  margin-right: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
 }
 
-.btn-primary {
-  background-color: #409eff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #66b1ff;
-}
-
-.btn-danger {
-  background-color: #f56c6c;
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: #f78989;
+.el-button--mini + .el-button--mini {
+  margin-left: 8px;
 }
 
 /* 自定义搜索输入框样式 */

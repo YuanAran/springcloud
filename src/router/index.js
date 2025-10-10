@@ -5,6 +5,7 @@ import About from '@/views/About.vue'
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
 import UserManagement from '@/views/UserManagement.vue'
+import DepartmentManagement from '@/views/DepartmentManagement.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import ChangePassword from '@/views/ChangePassword.vue'
 import {getToken} from "@/utils/auth";
@@ -33,6 +34,12 @@ const routes = [
                 path: 'user-management',
                 name: 'UserManagement',
                 component: UserManagement,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'department-management',
+                name: 'DepartmentManagement',
+                component: DepartmentManagement,
                 meta: { requiresAuth: true }
             },
             {

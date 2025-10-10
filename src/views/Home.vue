@@ -50,6 +50,10 @@
                 <i class="el-icon-user"></i>
                 <span>用户管理</span>
               </el-menu-item>
+              <el-menu-item index="/home/department-management">
+                <i class="el-icon-office-building"></i>
+                <span>部门管理</span>
+              </el-menu-item>
             </el-submenu>
 
             <!-- 关于 -->
