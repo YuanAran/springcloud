@@ -27,6 +27,7 @@ public class DbController {
         LoginRequest loginRequest=new LoginRequest();
         SysUser sysUser=sqlService.selectByUname(username);
         if(sysUser==null)return null;
+        loginRequest.setUserId(sysUser.getUserId());
         loginRequest.setUsername(sysUser.getUsername());
         loginRequest.setPassword(sysUser.getPassword());
         return loginRequest;

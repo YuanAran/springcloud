@@ -22,6 +22,10 @@ public interface DatabaseClient {
     @PostMapping("/db/dept/insert")
      int insert(@RequestBody SysDept sysDept);
 
+    //更新部门
+    @PostMapping("/db/dept/update")
+     int update(@RequestBody SysDept sysDept);
+
     //删除部门
     @PostMapping("/db/dept/delete")
      int delete(@RequestBody List<String> deptIds);

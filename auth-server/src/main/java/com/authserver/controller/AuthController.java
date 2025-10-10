@@ -43,6 +43,7 @@ public class AuthController {
         String token = JwtUntil.generateToken(loginRequest.getUsername());
         map.put("token", token);
         map.put("mes", "登录成功");
+        map.put("userId",userFromDb.getUserId());
 
         return map;
     }

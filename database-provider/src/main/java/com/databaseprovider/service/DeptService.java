@@ -33,6 +33,12 @@ public class DeptService {
 
     //新增部门
     public int insert(SysDept sysDept) {return deptMapper.insert(sysDept);}
+    //更新部门
+    public int update(SysDept sysDept){
+        QueryWrapper<SysDept> wrapper = new QueryWrapper<SysDept>()
+                .eq("dept_id", sysDept.getDeptId());
+        return deptMapper.update(sysDept,wrapper);
+    }
 
     //删除部门
     public int delete(List<String> deptIds) {

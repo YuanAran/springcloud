@@ -15,7 +15,7 @@ public class SqlService {
     //查询用户是否存在
     public SysUser selectByUname(String username) {
         QueryWrapper<SysUser> wrapper =new QueryWrapper<SysUser>()
-                .select("username","password")
+                .select("username","password","user_id")
                 .eq("username",username);
         return userMapper.selectOne(wrapper);
     }

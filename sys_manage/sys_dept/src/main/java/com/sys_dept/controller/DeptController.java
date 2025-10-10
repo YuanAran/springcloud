@@ -30,6 +30,11 @@ public class DeptController {
         sysDept.setCreateTime(new Timestamp(new Date().getTime()));
         return databaseClient.insert(sysDept);
     }
+    @PostMapping("/updateDept")
+    public int updateDept(@RequestBody SysDept sysDept){
+        sysDept.setUpdateTime(new Timestamp(new Date().getTime()));
+        return databaseClient.update(sysDept);
+    }
     @PostMapping("/deleteDept")
     public int deleteDept(@RequestBody List<String> deptIds){
         return databaseClient.delete(deptIds);

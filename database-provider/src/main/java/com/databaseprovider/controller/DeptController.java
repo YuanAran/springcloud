@@ -31,6 +31,11 @@ public class DeptController {
     public int insert(@RequestBody SysDept sysDept) {
         return deptService.insert(sysDept);
     }
+    //更新部门
+    @PostMapping("/update")
+    public int update(@RequestBody SysDept sysDept) {
+        return deptService.update(sysDept);
+    }
 
     //删除部门
     @PostMapping("/delete")
