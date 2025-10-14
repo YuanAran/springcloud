@@ -31,6 +31,11 @@ spring:
           predicates:
             - Path=/sys_dept/**
 
+        - id: dict-service
+          uri: lb://dict-service
+          predicates:
+            - Path=/sys_dict/**
+
 eureka:
   client:
     service-uri:

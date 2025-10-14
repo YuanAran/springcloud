@@ -2,17 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>sys_user</groupId>
-    <artifactId>sys_user</artifactId>
+    <groupId>com</groupId>
+    <artifactId>sys_dict</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>sys_user</name>
-    <description>sys_user</description>
+    <name>sys_dict</name>
+    <description>sys_dict</description>
     <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>2.3.12.RELEASE</spring-boot.version>
     </properties>
+
     <parent>
         <groupId>sys_manage</groupId>
         <artifactId>sys_manage</artifactId>
@@ -20,18 +21,10 @@
     </parent>
     <dependencies>
         <dependency>
-            <groupId>common-security</groupId>
-            <artifactId>common-security</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -73,7 +66,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
-                    <mainClass>com.sys_user.SysUserApplication</mainClass>
+                    <mainClass>com.sys_dict.SysDictApplication</mainClass>
                     <skip>true</skip>
                 </configuration>
                 <executions>

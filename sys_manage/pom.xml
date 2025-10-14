@@ -21,8 +21,12 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <modules>
+        <!--用户管理模块-->
         <module>sys_user</module>
+        <!--部门管理模块-->
         <module>sys_dept</module>
+        <!--字典管理模块-->
+        <module>sys_dict</module>
     </modules>
     <packaging>pom</packaging>
     <dependencies>
@@ -39,6 +43,16 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>common-entity</groupId>
+            <artifactId>common-entity</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>common-entity</groupId>
+            <artifactId>common-entity</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

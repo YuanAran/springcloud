@@ -10,6 +10,7 @@
         <module name="sys_user" />
         <module name="auth-server" />
         <module name="sys_dept" />
+        <module name="sys_dict" />
         <module name="gateway-server" />
         <module name="eureka-server" />
         <module name="database-provider" />
