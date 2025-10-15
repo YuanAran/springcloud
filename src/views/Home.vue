@@ -54,6 +54,14 @@
                 <i class="el-icon-office-building"></i>
                 <span>部门管理</span>
               </el-menu-item>
+              <el-menu-item index="/home/dict-management">
+                <i class="el-icon-collection"></i>
+                <span>字典管理</span>
+              </el-menu-item>
+              <el-menu-item index="/home/menu-management">
+                <i class="el-icon-menu"></i>
+                <span>菜单管理</span>
+              </el-menu-item>
             </el-submenu>
 
             <!-- 关于 -->

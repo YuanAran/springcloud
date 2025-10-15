@@ -8,6 +8,9 @@ import UserManagement from '@/views/UserManagement.vue'
 import DepartmentManagement from '@/views/DepartmentManagement.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import ChangePassword from '@/views/ChangePassword.vue'
+import DictionaryManagement from '@/views/DictionaryManagement.vue'
+import DictionaryItemManagement from '@/views/DictionaryItemManagement.vue'
+import MenuManagement from '@/views/MenuManagement.vue'
 import {getToken} from "@/utils/auth";
 
 Vue.use(VueRouter)
@@ -40,6 +43,24 @@ const routes = [
                 path: 'department-management',
                 name: 'DepartmentManagement',
                 component: DepartmentManagement,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'dict-management',
+                name: 'DictionaryManagement',
+                component: DictionaryManagement,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'dict-item',
+                name: 'DictionaryItemManagement',
+                component: DictionaryItemManagement,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'menu-management',
+                name: 'MenuManagement',
+                component: MenuManagement,
                 meta: { requiresAuth: true }
             },
             {
