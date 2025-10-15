@@ -27,6 +27,8 @@
         <module>sys_dept</module>
         <!--字典管理模块-->
         <module>sys_dict</module>
+        <!--菜单管理模块-->
+        <module>sys_menu</module>
     </modules>
     <packaging>pom</packaging>
     <dependencies>

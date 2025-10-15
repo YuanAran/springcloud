@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class JwtUntil {
     private static final String SECRET="sdahsdasdaosdjaosidjaodnjnkhasdaidhio";
-    private static final long EXPIRATION=60*60*1000;
+    private static final long EXPIRATION=12*60*60*1000;
 
     //生成token
     public static String generateToken(String username){

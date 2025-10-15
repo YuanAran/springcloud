@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="common-security" />
         <module name="sys_user" />
+        <module name="sys_menu" />
         <module name="auth-server" />
         <module name="sys_dept" />
         <module name="sys_dict" />

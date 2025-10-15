@@ -27,6 +27,8 @@
     <file url="file://$PROJECT_DIR$/sys_manage/sys_dept/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sys_manage/sys_dict/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sys_manage/sys_dict/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/sys_manage/sys_menu/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/sys_manage/sys_menu/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sys_manage/sys_user/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sys_manage/sys_user/src/main/resources" charset="UTF-8" />
   </component>

@@ -18,6 +18,7 @@
         <option value="$PROJECT_DIR$/common/common-entity/pom.xml" />
         <option value="$PROJECT_DIR$/sys_manage/sys_dept/pom.xml" />
         <option value="$PROJECT_DIR$/sys_manage/sys_dict/pom.xml" />
+        <option value="$PROJECT_DIR$/sys_manage/sys_menu/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
