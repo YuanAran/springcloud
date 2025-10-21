@@ -16,6 +16,7 @@
         <module name="eureka-server" />
         <module name="database-provider" />
         <module name="common-entity" />
+        <module name="sys_role" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

@@ -3,14 +3,16 @@ package com.commonentity.pojo;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.sql.Timestamp;
+
 @Data
 @TableName("sys_dept")
 public class SysDept {
 
   private String createBy;
-  private java.sql.Timestamp createTime;
+  private Timestamp createTime;
   private String updateBy;
-  private java.sql.Timestamp updateTime;
+  private Timestamp updateTime;
   private String deptId;
   private String deptCode;
   private String parentId;
