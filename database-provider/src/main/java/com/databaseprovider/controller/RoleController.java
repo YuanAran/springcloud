@@ -55,8 +55,8 @@ public class RoleController {
      * 权限部门增删改
      * */
     @PostMapping("/insertRoleDept")
-    public int insertRoleDept(@RequestBody SysRoleDept sysRoleDept){
-        return roleService.insertRoleDept(sysRoleDept);
+    public int insertRoleDept(@RequestBody List<SysRoleDept> list){
+        return roleService.insertRoleDept(list);
     }
     @PostMapping("/updateRoleDept")
     public int updateRoleDept(@RequestBody SysRoleDept sysRoleDept){
@@ -72,8 +72,8 @@ public class RoleController {
      * 角色菜单增删改
      * */
     @PostMapping("/insertRoleMenu")
-    public int insertRoleMenu(@RequestBody SysRoleMenu sysRoleMenu){
-        return roleService.insertRoleMenu(sysRoleMenu);
+    public int insertRoleMenu(@RequestBody List<SysRoleMenu> list){
+        return roleService.insertRoleMenu(list);
     }
     @PostMapping("/updateRoleMenu")
     public int updateRoleMenu(@RequestBody SysRoleMenu sysRoleMenu){

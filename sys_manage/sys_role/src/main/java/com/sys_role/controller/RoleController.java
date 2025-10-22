@@ -1,6 +1,8 @@
 package com.sys_role.controller;
 
 import com.commonentity.pojo.SysRole;
+import com.commonentity.pojo.SysRoleDept;
+import com.commonentity.pojo.SysRoleMenu;
 import com.commonentity.vo.RoleVo;
 import com.sys_role.feign.DatabaseClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,5 +47,42 @@ public class RoleController {
     @PostMapping("/getRoleVo")
     public RoleVo getRoleVo(@RequestBody Map<String,String> map){
         return databaseClient.selectRoleVo(map);
+    }
+
+
+    /**
+     * 权限部门增删改
+     * */
+    @PostMapping("/addRoleDept")
+    public int addRoleDept(@RequestBody List<SysRoleDept> list){
+        return databaseClient.insertRoleDept(list);
+    }
+
+    @PostMapping("/updateRoleDept")
+    public int updateRoleDept(@RequestBody SysRoleDept sysRoleDept){
+        return databaseClient.updateRoleDept(sysRoleDept);
+    }
+
+    @PostMapping("/deleteRoleDept")
+    public int deleteRoleDept(@RequestBody List<SysRoleDept> roleDepts){
+        return databaseClient.deleteRoleDept(roleDepts);
+    }
+
+    /**
+     * 角色菜单增删改
+     * */
+    @PostMapping("/addRoleMenu")
+    public int addRoleMenu(@RequestBody List<SysRoleMenu> list){
+        return databaseClient.insertRoleMenu(list);
+    }
+
+    @PostMapping("/updateRoleMenu")
+    public int updateRoleMenu(@RequestBody SysRoleMenu sysRoleMenu){
+        return databaseClient.updateRoleMenu(sysRoleMenu);
+    }
+
+    @PostMapping("/deleteRoleMenu")
+    public int deleteRoleMenu(@RequestBody List<SysRoleMenu> roleMenus){
+        return databaseClient.deleteRoleMenu(roleMenus);
     }
 }

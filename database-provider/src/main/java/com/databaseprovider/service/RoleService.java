@@ -66,8 +66,12 @@ public class RoleService {
      * 关于权限部门的增删改
      * */
     //增加角色的权限部门
-    public int insertRoleDept(SysRoleDept sysRoleDept){
-        return roleDeptMapper.insert(sysRoleDept);
+    public int insertRoleDept(List<SysRoleDept> list){
+        int totalInserted = 0;
+        for(SysRoleDept sysRoleDept:list){
+            totalInserted += roleDeptMapper.insert(sysRoleDept);
+        }
+        return totalInserted;
     }
 
     public int updateRoleDept(SysRoleDept sysRoleDept){
@@ -95,8 +99,12 @@ public class RoleService {
      * */
 
     //插入
-     public int insertRoleMenu(SysRoleMenu sysRoleMenu){
-        return roleMenuMapper.insert(sysRoleMenu);
+     public int insertRoleMenu(List<SysRoleMenu> list){
+         int totalInserted = 0;
+         for(SysRoleMenu sysRoleMenu:list){
+             totalInserted += roleMenuMapper.insert(sysRoleMenu);
+         }
+         return totalInserted;
     }
 
     //更新
