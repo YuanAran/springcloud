@@ -7,12 +7,17 @@
 
     <!-- 操作栏 -->
     <div class="operation-bar">
-      <el-button type="primary" plain icon="el-icon-plus" @click="showAddDialog()">
-        新增部门
-      </el-button>
-      <el-button type="danger" plain icon="el-icon-delete" :disabled="selectedDepartments.length === 0" @click="batchDelete">
-        批量删除
-      </el-button>
+      <div class="left-buttons">
+        <el-button type="primary" plain icon="el-icon-plus" @click="showAddDialog()">
+          新增部门
+        </el-button>
+        <el-button type="danger" plain icon="el-icon-delete" :disabled="selectedDepartments.length === 0" @click="batchDelete">
+          批量删除
+        </el-button>
+        <el-button type="success" plain icon="el-icon-refresh" @click="refreshDepartments">
+          刷新
+        </el-button>
+      </div>
 
       <div class="search-box">
         <div class="custom-input-container">
@@ -435,15 +440,47 @@ export default {
         this.tableKey++
         // 初始化本地 deptSort 为当前符合规则的部门总量
         this.deptSort = this.getEligibleDepartmentsCount()
+        
+        // 将部门数据暂存到store，供其他模块使用
+        this.saveDepartmentsToStore()
       } catch (error) {
-        console.error('获取部门列表失败，使用模拟数据：', error)
-        const mockData = this.getMockDepartments()
-        this.departments = mockData
+        console.error('获取部门列表失败：', error)
+        this.$message.error('获取部门列表失败：' + (error.message || '请检查网络连接'))
+        this.departments = []
         this.tableKey++
-        this.deptSort = this.getEligibleDepartmentsCount()
       } finally {
         this.loading = false
       }
+    },
+
+    // 将部门数据保存到store
+    saveDepartmentsToStore() {
+      // 递归遍历所有部门，将所有部门展开为扰平数组
+      const flattenDepartments = []
+      const traverse = (items) => {
+        items.forEach(item => {
+          flattenDepartments.push({
+            id: item.id,
+            name: item.name,
+            code: item.code
+          })
+          if (item.children && item.children.length > 0) {
+            traverse(item.children)
+          }
+        })
+      }
+      traverse(this.departments)
+      
+      // 保存到store
+      this.$store.dispatch('updateDepartments', flattenDepartments)
+      console.log('部门数据已暂存，共', flattenDepartments.length, '个部门')
+    },
+
+    // 刷新部门数据
+    async refreshDepartments() {
+      this.$message.info('正在刷新部门数据...')
+      await this.fetchDepartments()
+      this.$message.success('部门数据刷新成功')
     },
 
     // 将后端列表标准化并按 dept_code 构造成树（通过前缀关系）
@@ -844,8 +881,13 @@ export default {
   margin-bottom: 16px;
 }
 
+.left-buttons {
+  display: flex;
+  gap: 8px;
+}
+
 .operation-bar .el-button {
-  margin-right: 8px;
+  margin-right: 0;
 }
 
 .search-box {

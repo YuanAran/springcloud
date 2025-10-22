@@ -62,6 +62,10 @@
                 <i class="el-icon-menu"></i>
                 <span>菜单管理</span>
               </el-menu-item>
+              <el-menu-item index="/home/role-management">
+                <i class="el-icon-user-solid"></i>
+                <span>角色管理</span>
+              </el-menu-item>
             </el-submenu>
 
             <!-- 关于 -->

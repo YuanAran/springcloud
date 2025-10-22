@@ -5,12 +5,14 @@ import About from '@/views/About.vue'
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
 import UserManagement from '@/views/UserManagement.vue'
-import DepartmentManagement from '@/views/DepartmentManagement.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import ChangePassword from '@/views/ChangePassword.vue'
 import DictionaryManagement from '@/views/DictionaryManagement.vue'
 import DictionaryItemManagement from '@/views/DictionaryItemManagement.vue'
 import MenuManagement from '@/views/MenuManagement.vue'
+import DepartmentManagement from '@/views/DepartmentManagement.vue'
+import RoleManagement from '@/views/RoleManagement.vue'
+import RoleDetail from '@/views/RoleDetail.vue'
 import {getToken} from "@/utils/auth";
 
 Vue.use(VueRouter)
@@ -61,6 +63,18 @@ const routes = [
                 path: 'menu-management',
                 name: 'MenuManagement',
                 component: MenuManagement,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'role-management',
+                name: 'RoleManagement',
+                component: RoleManagement,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'role-detail/:roleId',
+                name: 'RoleDetail',
+                component: RoleDetail,
                 meta: { requiresAuth: true }
             },
             {
