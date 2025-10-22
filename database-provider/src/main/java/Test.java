@@ -1,9 +1,9 @@
 import com.databaseprovider.controller.DbController;
 import com.databaseprovider.controller.DeptController;
+import com.databaseprovider.service.RoleService;
 
 public class Test {
     public static void main(String[] args) {
-        DeptController deptController=new DeptController();
-        System.out.println(deptController.selectList());
+        RoleService roleService = new RoleService();
     }
 }

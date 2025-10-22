@@ -1,6 +1,7 @@
 package com.sys_role.controller;
 
 import com.commonentity.pojo.SysRole;
+import com.commonentity.vo.RoleVo;
 import com.sys_role.feign.DatabaseClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -40,4 +42,8 @@ public class RoleController {
         return databaseClient.delete(roleIds);
     }
 
+    @PostMapping("/getRoleVo")
+    public RoleVo getRoleVo(@RequestBody Map<String,String> map){
+        return databaseClient.selectRoleVo(map);
+    }
 }

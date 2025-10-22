@@ -4,10 +4,12 @@ import com.commonentity.pojo.SysRole;
 import com.commonentity.pojo.SysRoleMenu;
 import com.commonentity.pojo.SysRoleDept;
 import com.commonentity.pojo.SysUserRole;
+import com.commonentity.vo.RoleVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient("database-provider")
 public interface DatabaseClient {
@@ -27,4 +29,6 @@ public interface DatabaseClient {
     @PostMapping("/db/role/delete")
     int delete(@RequestBody List<String> roleIds);
 
+    @PostMapping("/db/role/selectRoleVo")
+    RoleVo selectRoleVo(@RequestBody Map<String,String> map);
 }

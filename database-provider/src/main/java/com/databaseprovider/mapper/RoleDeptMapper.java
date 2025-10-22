@@ -11,8 +11,8 @@ import java.util.List;
 
 @Mapper
 public interface RoleDeptMapper extends BaseMapper<SysRoleDept> {
-    @Select("select d.dept_id,d.dept_name " +
-            "from sys_dept d join sys_role_dept r on d.dept_code = r.dept_code" +
+    @Select("select d.dept_id,d.dept_name,d.dept_code " +
+            "from sys_dept d join sys_role_dept r on d.dept_code = r.dept_code " +
             "where r.role_id=#{roleId} ")
     List<SysDept> getRoleDepts(@Param("roleId") String roleId);
 }
