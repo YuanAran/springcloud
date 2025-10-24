@@ -13,6 +13,7 @@ import MenuManagement from '@/views/MenuManagement.vue'
 import DepartmentManagement from '@/views/DepartmentManagement.vue'
 import RoleManagement from '@/views/RoleManagement.vue'
 import RoleDetail from '@/views/RoleDetail.vue'
+import PostManagement from '@/views/PostManagement.vue'
 import {getToken} from "@/utils/auth";
 
 Vue.use(VueRouter)
@@ -75,6 +76,12 @@ const routes = [
                 path: 'role-detail/:roleId',
                 name: 'RoleDetail',
                 component: RoleDetail,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'post-management',
+                name: 'PostManagement',
+                component: PostManagement,
                 meta: { requiresAuth: true }
             },
             {

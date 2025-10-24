@@ -66,6 +66,10 @@
                 <i class="el-icon-user-solid"></i>
                 <span>角色管理</span>
               </el-menu-item>
+              <el-menu-item index="/home/post-management">
+                <i class="el-icon-suitcase"></i>
+                <span>岗位管理</span>
+              </el-menu-item>
             </el-submenu>
 
             <!-- 关于 -->

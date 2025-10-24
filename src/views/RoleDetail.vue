@@ -36,7 +36,10 @@
           <div class="tab-content">
             <div class="section-header">
               <h4>菜单权限</h4>
-              <el-button size="small" type="primary" plain icon="el-icon-edit" @click="editPermission">编辑权限</el-button>
+              <div class="action-buttons">
+                <el-button size="small" type="primary" plain icon="el-icon-plus" @click="showAddPermission">新增权限</el-button>
+                <el-button size="small" type="danger" plain icon="el-icon-delete" @click="showDeletePermission">删除权限</el-button>
+              </div>
             </div>
             
             <div class="permission-list" v-if="permissions.length > 0">
@@ -68,7 +71,6 @@
               <div class="action-buttons">
                 <el-button size="small" type="primary" plain icon="el-icon-plus" @click="showAddDepartment">新增部门</el-button>
                 <el-button size="small" type="danger" plain icon="el-icon-delete" @click="showDeleteDepartment">删除部门</el-button>
-                <el-button size="small" type="warning" plain icon="el-icon-edit" @click="showUpdateDepartment">更新部门</el-button>
               </div>
             </div>
             
@@ -119,20 +121,58 @@
       </el-tabs>
     </div>
 
-    <!-- 编辑权限对话框 -->
-    <el-dialog title="编辑菜单权限" :visible.sync="permissionDialogVisible" width="600px">
-      <el-tree
-        ref="permissionTree"
-        :data="allMenus"
-        show-checkbox
-        node-key="menuId"
-        :props="treeProps"
-        :default-checked-keys="checkedPermissions"
-        default-expand-all>
-      </el-tree>
+    <!-- 新增权限对话框 -->
+    <el-dialog title="新增菜单权限" :visible.sync="addPermissionDialogVisible" width="600px">
+      <div class="dialog-hint">
+        <i class="el-icon-info"></i>
+        选择需要添加的菜单权限（已拥有的菜单将显示为灰色不可选状态）
+      </div>
+      <div class="menu-tree-container">
+        <el-tree
+          ref="addPermissionTree"
+          :data="allMenus"
+          show-checkbox
+          node-key="menuId"
+          :props="treeProps"
+          :default-checked-keys="existingMenuIds"
+          :default-expanded-keys="existingMenuIds"
+          check-strictly
+          default-expand-all>
+          <span class="custom-tree-node" slot-scope="{ node, data }">
+            <span :style="{ color: isMenuAlreadyOwned(data.menuId) ? '#c0c4cc' : '' }">
+              <i :class="getMenuIcon(data.type)"></i>
+              {{ node.label }}
+            </span>
+            <el-tag v-if="isMenuAlreadyOwned(data.menuId)" size="mini" type="success">已拥有</el-tag>
+          </span>
+        </el-tree>
+      </div>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="permissionDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="savePermission">保存</el-button>
+        <el-button @click="addPermissionDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveAddPermission" :loading="submitLoading">确定添加</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 删除权限对话框 -->
+    <el-dialog title="删除菜单权限" :visible.sync="deletePermissionDialogVisible" width="600px">
+      <div class="dialog-hint">
+        <i class="el-icon-warning"></i>
+        选择需要删除的菜单权限（删除后该角色将失去这些菜单的访问权限）
+      </div>
+      <div class="menu-tree-container">
+        <el-tree
+          ref="deletePermissionTree"
+          :data="permissions"
+          show-checkbox
+          node-key="menuId"
+          :props="treeProps"
+          :default-checked-keys="[]"
+          default-expand-all>
+        </el-tree>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="deletePermissionDialogVisible = false">取消</el-button>
+        <el-button type="danger" @click="saveDeletePermission" :loading="submitLoading">确定删除</el-button>
       </div>
     </el-dialog>
 
@@ -140,7 +180,7 @@
     <el-dialog title="新增数据权限部门" :visible.sync="addDepartmentDialogVisible" width="800px">
       <div class="dialog-hint">
         <i class="el-icon-info"></i>
-        选择需要添加的部门（已添加的部门不会显示）
+        选择需要添加的部门（已拥有的部门将显示为灰色不可选状态）
       </div>
       <div class="department-table-container" v-loading="loadingDepts">
         <div class="custom-table-wrapper">
@@ -156,16 +196,21 @@
                 </th>
                 <th>部门名称</th>
                 <th>部门编码</th>
+                <th>状态</th>
               </tr>
             </thead>
             <tbody>
               <template v-for="dept in flatAvailableDepartments">
                 <tr :key="dept.deptId" 
-                    :class="{ 'selected': selectedDeptCodes.includes(dept.deptCode) }"
-                    @click="toggleDeptSelection(dept)">
+                    :class="{ 
+                      'selected': selectedDeptCodes.includes(dept.deptCode),
+                      'disabled-row': isDeptAlreadyOwned(dept.deptCode)
+                    }"
+                    @click="!isDeptAlreadyOwned(dept.deptCode) && toggleDeptSelection(dept)">
                   <td class="selection-column">
                     <el-checkbox
                       :value="selectedDeptCodes.includes(dept.deptCode)"
+                      :disabled="isDeptAlreadyOwned(dept.deptCode)"
                       @change="toggleDeptSelection(dept)">
                     </el-checkbox>
                   </td>
@@ -175,10 +220,14 @@
                         <i :class="dept.expanded ? 'el-icon-caret-bottom' : 'el-icon-caret-right'"></i>
                       </span>
                       <span v-else class="expand-placeholder"></span>
-                      <el-tag size="small" type="primary">{{ dept.deptName }}</el-tag>
+                      <el-tag size="small" :type="isDeptAlreadyOwned(dept.deptCode) ? 'info' : 'primary'">{{ dept.deptName }}</el-tag>
                     </div>
                   </td>
                   <td>{{ dept.deptCode }}</td>
+                  <td>
+                    <el-tag v-if="isDeptAlreadyOwned(dept.deptCode)" size="mini" type="success">已拥有</el-tag>
+                    <el-tag v-else size="mini" type="info">可添加</el-tag>
+                  </td>
                 </tr>
               </template>
             </tbody>
@@ -246,65 +295,12 @@
       </div>
     </el-dialog>
 
-    <!-- 更新部门对话框 -->
-    <el-dialog title="更新数据权限部门" :visible.sync="updateDepartmentDialogVisible" width="800px">
-      <div class="dialog-hint">
-        <i class="el-icon-edit"></i>
-        重新选择该角色的数据权限部门（未选中的部门将被移除）
-      </div>
-      <div class="department-table-container" v-loading="loadingDepts">
-        <div class="custom-table-wrapper">
-          <table class="custom-table">
-            <thead>
-              <tr>
-                <th class="selection-column">
-                  <el-checkbox
-                    :indeterminate="isIndeterminateDept"
-                    v-model="checkAllDept"
-                    @change="handleCheckAllDeptChange">
-                  </el-checkbox>
-                </th>
-                <th>部门名称</th>
-                <th>部门编码</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-for="dept in flatAllDepartments">
-                <tr :key="dept.deptId" 
-                    :class="{ 'selected': selectedDeptCodes.includes(dept.deptCode) }"
-                    @click="toggleDeptSelection(dept)">
-                  <td class="selection-column">
-                    <el-checkbox
-                      :value="selectedDeptCodes.includes(dept.deptCode)"
-                      @change="toggleDeptSelection(dept)">
-                    </el-checkbox>
-                  </td>
-                  <td>
-                    <div class="department-name-wrapper" :style="{ paddingLeft: (dept.level * 20) + 'px' }">
-                      <span v-if="dept.hasChildren" class="expand-icon" @click.stop="toggleDeptExpand(dept)">
-                        <i :class="dept.expanded ? 'el-icon-caret-bottom' : 'el-icon-caret-right'"></i>
-                      </span>
-                      <span v-else class="expand-placeholder"></span>
-                      <el-tag size="small" type="warning">{{ dept.deptName }}</el-tag>
-                    </div>
-                  </td>
-                  <td>{{ dept.deptCode }}</td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="updateDepartmentDialogVisible = false">取消</el-button>
-        <el-button type="warning" @click="saveUpdateDepartment" :loading="submitLoading">确定更新</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getRoleVo } from '@/api/role'
+import { getRoleVo, addRoleDept, deleteRoleDept, addRoleMenu, deleteRoleMenu } from '@/api/role'
+import request from '@/utils/request'
 
 export default {
   name: 'RoleDetail',
@@ -331,19 +327,19 @@ export default {
         children: 'children',
         label: 'deptName'
       },
-      // 编辑对话框
-      permissionDialogVisible: false,
+      // 权限对话框
+      addPermissionDialogVisible: false,
+      deletePermissionDialogVisible: false,
       allMenus: [],
-      checkedPermissions: [],
+      existingMenuIds: [], // 已拥有的菜单ID列表
       // 部门对话框
       addDepartmentDialogVisible: false,
       deleteDepartmentDialogVisible: false,
-      updateDepartmentDialogVisible: false,
       // 部门编辑相关
-      allDepartmentsTree: [],
       availableDepartments: [],
       selectedDeptCodes: [],
       selectedDeleteDepts: [],
+      existingDeptCodes: [], // 已拥有的部门编码列表
       checkAllDept: false,
       isIndeterminateDept: false,
       checkAllDelete: false,
@@ -353,26 +349,6 @@ export default {
     }
   },
   computed: {
-    // 将所有部门树扁平化（用于更新对话框）
-    flatAllDepartments() {
-      const result = []
-      const traverse = (items, level = 0) => {
-        items.forEach(item => {
-          const flatItem = {
-            ...item,
-            level,
-            hasChildren: item.children && item.children.length > 0,
-            expanded: item.expanded !== false
-          }
-          result.push(flatItem)
-          if (flatItem.expanded && item.children && item.children.length > 0) {
-            traverse(item.children, level + 1)
-          }
-        })
-      }
-      traverse(this.allDepartmentsTree)
-      return result
-    },
     // 可添加的部门扁平化（用于新增对话框）
     flatAvailableDepartments() {
       const result = []
@@ -564,49 +540,210 @@ export default {
       this.$message.info('编辑角色功能')
       // TODO: 跳转到编辑页面或打开编辑对话框
     },
-    editPermission() {
-      this.permissionDialogVisible = true
-      // TODO: 加载所有菜单和已选中的权限
-      this.allMenus = [...this.permissions]
-      this.checkedPermissions = [2, 3, 4]
+    // 显示新增权限对话框
+    async showAddPermission() {
+      this.addPermissionDialogVisible = true
+      
+      try {
+        // 从store获取所有菜单数据
+        let allMenusData = this.$store.getters.allMenus || []
+        
+        // 如果store中没有菜单数据，则向后端请求
+        if (allMenusData.length === 0) {
+          console.log('暂存菜单数据为空，正在从后端获取...')
+          const response = await request.get('/sys_menu/getAllMenu')
+          allMenusData = response || []
+          
+          // 将数据存入store
+          if (allMenusData.length > 0) {
+            this.$store.dispatch('updateMenus', allMenusData)
+            console.log('菜单数据已暂存，共', allMenusData.length, '个菜单')
+          } else {
+            this.$message.warning('获取菜单数据失败')
+            this.addPermissionDialogVisible = false
+            return
+          }
+        }
+        
+        // 记录已拥有的菜单ID
+        this.existingMenuIds = this.getAllMenuIds(this.permissions)
+        
+        // 构建成树形结构
+        this.allMenus = this.buildTree(allMenusData, 'menuId', 'parentId')
+        
+        // 等待下一个时序后禁用已有菜单的选择框
+        this.$nextTick(() => {
+          this.existingMenuIds.forEach(menuId => {
+            const node = this.$refs.addPermissionTree.getNode(menuId)
+            if (node) {
+              node.disabled = true
+            }
+          })
+        })
+      } catch (error) {
+        console.error('获取菜单数据失败：', error)
+        this.$message.error('获取菜单数据失败：' + (error.message || '未知错误'))
+        this.addPermissionDialogVisible = false
+      }
     },
-    savePermission() {
-      // const checkedKeys = this.$refs.permissionTree.getCheckedKeys()
-      this.$message.success('权限保存成功（模拟）')
-      this.permissionDialogVisible = false
-      // TODO: 调用后端接口保存权限
-      // await updateRolePermission({ roleId: this.roleInfo.roleId, menuIds: checkedKeys })
+    
+    // 获取所有菜单ID（递归）
+    getAllMenuIds(menuTree) {
+      const ids = []
+      const traverse = (items) => {
+        items.forEach(item => {
+          if (item.menuId) {
+            ids.push(item.menuId)
+          }
+          if (item.children && item.children.length > 0) {
+            traverse(item.children)
+          }
+        })
+      }
+      traverse(menuTree)
+      return ids
+    },
+    
+    // 判断菜单是否已被角色拥有
+    isMenuAlreadyOwned(menuId) {
+      return this.existingMenuIds.includes(menuId)
+    },
+    
+    // 保存新增权限
+    async saveAddPermission() {
+      const checkedKeys = this.$refs.addPermissionTree.getCheckedKeys()
+      const halfCheckedKeys = this.$refs.addPermissionTree.getHalfCheckedKeys()
+      const allKeys = [...checkedKeys, ...halfCheckedKeys]
+      
+      // 过滤掉已存在的菜单ID，只保留新增的
+      const newKeys = allKeys.filter(menuId => !this.existingMenuIds.includes(menuId))
+      
+      if (newKeys.length === 0) {
+        this.$message.warning('请选择要添加的权限')
+        return
+      }
+      
+      try {
+        this.submitLoading = true
+        
+        // 将选中的菜单ID转换为对象数组格式
+        const menuList = newKeys.map(menuId => ({
+          roleId: this.roleInfo.roleId,
+          menuId: menuId
+        }))
+        
+        await addRoleMenu(menuList)
+        
+        this.$message.success(`成功添加 ${newKeys.length} 个权限`)
+        this.addPermissionDialogVisible = false
+        // 重新加载角色详情
+        await this.loadRoleDetail()
+      } catch (error) {
+        this.$message.error('添加权限失败：' + (error.message || '未知错误'))
+      } finally {
+        this.submitLoading = false
+      }
+    },
+    
+    // 显示删除权限对话框
+    showDeletePermission() {
+      if (this.permissions.length === 0) {
+        this.$message.warning('当前角色暂无权限数据')
+        return
+      }
+      this.deletePermissionDialogVisible = true
+    },
+    
+    // 保存删除权限
+    async saveDeletePermission() {
+      const checkedKeys = this.$refs.deletePermissionTree.getCheckedKeys()
+      const halfCheckedKeys = this.$refs.deletePermissionTree.getHalfCheckedKeys()
+      const allKeys = [...checkedKeys, ...halfCheckedKeys]
+      
+      if (allKeys.length === 0) {
+        this.$message.warning('请选择要删除的权限')
+        return
+      }
+      
+      this.$confirm(`确定要删除选中的 ${allKeys.length} 个菜单权限吗？`, '删除权限', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        try {
+          this.submitLoading = true
+          
+          // 将选中的菜单ID转换为对象数组格式
+          const menuList = allKeys.map(menuId => ({
+            roleId: this.roleInfo.roleId,
+            menuId: menuId
+          }))
+          
+          await deleteRoleMenu(menuList)
+          
+          this.$message.success(`成功删除 ${allKeys.length} 个权限`)
+          this.deletePermissionDialogVisible = false
+          // 重新加载角色详情
+          await this.loadRoleDetail()
+        } catch (error) {
+          this.$message.error('删除权限失败：' + (error.message || '未知错误'))
+        } finally {
+          this.submitLoading = false
+        }
+      }).catch(() => {})
     },
     
     // 显示新增部门对话框
-    showAddDepartment() {
+    async showAddDepartment() {
       this.loadingDepts = true
       this.addDepartmentDialogVisible = true
       this.selectedDeptCodes = []
       
-      // 从store获取所有部门数据
-      const allDepts = this.$store.getters.allDepartments || []
-      
-      if (allDepts.length === 0) {
-        this.$message.warning('暂无部门数据，请先访问部门管理页面加载数据')
+      try {
+        // 从store获取所有部门数据
+        let allDepts = this.$store.getters.allDepartments || []
+        
+        // 如果store中没有部门数据，则向后端请求
+        if (allDepts.length === 0) {
+          console.log('暂存部门数据为空，正在从后端获取...')
+          const response = await request.get('/sys_dept/getAllDept')
+          allDepts = response || []
+          
+          // 将数据存入store
+          if (allDepts.length > 0) {
+            this.$store.dispatch('updateDepartments', allDepts)
+            console.log('部门数据已暂存，共', allDepts.length, '个部门')
+          } else {
+            this.$message.warning('获取部门数据失败')
+            this.addDepartmentDialogVisible = false
+            this.loadingDepts = false
+            return
+          }
+        }
+        
+        // 记录已拥有的部门编码
+        this.existingDeptCodes = this.getAllDeptCodes(this.departments)
+        
+        // 显示所有部门（不过滤）
+        this.availableDepartments = this.buildDeptTreeByCode(allDepts.map(d => ({
+          deptId: d.deptId,
+          deptName: d.deptName,
+          deptCode: d.deptCode,
+          expanded: true
+        })))
+        
+        this.loadingDepts = false
+      } catch (error) {
+        console.error('获取部门数据失败：', error)
+        this.$message.error('获取部门数据失败：' + (error.message || '未知错误'))
         this.addDepartmentDialogVisible = false
         this.loadingDepts = false
-        return
       }
-      
-      // 过滤掉已经添加的部门
-      const existingCodes = this.getAllDeptCodes(this.departments)
-      const available = allDepts.filter(d => !existingCodes.includes(d.deptCode))
-      
-      // 构建成树形结构
-      this.availableDepartments = this.buildDeptTreeByCode(available.map(d => ({
-        deptId: d.deptId,
-        deptName: d.deptName,
-        deptCode: d.deptCode,
-        expanded: true
-      })))
-      
-      this.loadingDepts = false
+    },
+    
+    // 判断部门是否已被角色拥有
+    isDeptAlreadyOwned(deptCode) {
+      return this.existingDeptCodes.includes(deptCode)
     },
     
     // 显示删除部门对话框
@@ -617,36 +754,6 @@ export default {
       }
       this.deleteDepartmentDialogVisible = true
       this.selectedDeleteDepts = []
-    },
-    
-    // 显示更新部门对话框
-    showUpdateDepartment() {
-      this.loadingDepts = true
-      this.updateDepartmentDialogVisible = true
-      
-      // 从store获取所有部门数据
-      const allDepts = this.$store.getters.allDepartments || []
-      
-      if (allDepts.length === 0) {
-        this.$message.warning('暂无部门数据，请先访问部门管理页面加载数据')
-        this.updateDepartmentDialogVisible = false
-        this.loadingDepts = false
-        return
-      }
-      
-      // 构建成树形结构
-      this.allDepartmentsTree = this.buildDeptTreeByCode(allDepts.map(d => ({
-        deptId: d.deptId,
-        deptName: d.deptName,
-        deptCode: d.deptCode,
-        expanded: true
-      })))
-      
-      // 初始化已选中的部门编码
-      this.selectedDeptCodes = this.getAllDeptCodes(this.departments)
-      this.updateCheckAllDeptStatus()
-      
-      this.loadingDepts = false
     },
     
     // 获取所有部门编码（递归）
@@ -667,24 +774,32 @@ export default {
     },
     
     // 保存新增部门
-    saveAddDepartment() {
+    async saveAddDepartment() {
       if (this.selectedDeptCodes.length === 0) {
         this.$message.warning('请选择要添加的部门')
         return
       }
       
-      this.submitLoading = true
-      
-      // TODO: 调用后端接口添加部门
-      // await addRoleDept({ roleId: this.roleInfo.roleId, deptCodes: this.selectedDeptCodes })
-      
-      setTimeout(() => {
-        this.$message.success(`成功添加 ${this.selectedDeptCodes.length} 个部门（模拟）`)
+      try {
+        this.submitLoading = true
+        
+        // 将选中的部门编码转换为对象数组格式
+        const deptList = this.selectedDeptCodes.map(deptCode => ({
+          roleId: this.roleInfo.roleId,
+          deptCode: deptCode
+        }))
+        
+        await addRoleDept(deptList)
+        
+        this.$message.success(`成功添加 ${this.selectedDeptCodes.length} 个部门`)
         this.addDepartmentDialogVisible = false
-        this.submitLoading = false
         // 重新加载角色详情
-        // this.loadRoleDetail()
-      }, 500)
+        await this.loadRoleDetail()
+      } catch (error) {
+        this.$message.error('添加部门失败：' + (error.message || '未知错误'))
+      } finally {
+        this.submitLoading = false
+      }
     },
     
     // 保存删除部门
@@ -700,42 +815,38 @@ export default {
         cancelButtonText: '取消',
         type: 'warning',
         dangerouslyUseHTMLString: true
-      }).then(() => {
-        this.submitLoading = true
-        
-        const deptCodes = this.selectedDeleteDepts.map(d => d.deptCode)
-        console.log('准备删除的部门编码：', deptCodes)
-        // TODO: 调用后端接口删除部门
-        // await deleteRoleDept({ roleId: this.roleInfo.roleId, deptCodes: deptCodes })
-        
-        setTimeout(() => {
-          this.$message.success(`成功删除 ${this.selectedDeleteDepts.length} 个部门（模拟）`)
+      }).then(async () => {
+        try {
+          this.submitLoading = true
+          
+
+          // 将选中的部门转换为对象数组格式
+          const deptList = this.selectedDeleteDepts.map(dept => ({
+            roleId: this.roleInfo.roleId,
+            deptCode: dept.deptCode
+          }))
+          
+          await deleteRoleDept(deptList)
+          
+          this.$message.success(`成功删除 ${this.selectedDeleteDepts.length} 个部门`)
           this.deleteDepartmentDialogVisible = false
-          this.submitLoading = false
           // 重新加载角色详情
-          // this.loadRoleDetail()
-        }, 500)
+          await this.loadRoleDetail()
+        } catch (error) {
+          this.$message.error('删除部门失败：' + (error.message || '未知错误'))
+        } finally {
+          this.submitLoading = false
+        }
       }).catch(() => {})
-    },
-    
-    // 保存更新部门
-    saveUpdateDepartment() {
-      this.submitLoading = true
-      
-      // TODO: 调用后端接口更新部门权限
-      // await updateRoleDept({ roleId: this.roleInfo.roleId, deptCodes: this.selectedDeptCodes })
-      
-      setTimeout(() => {
-        this.$message.success('部门更新成功（模拟）')
-        this.updateDepartmentDialogVisible = false
-        this.submitLoading = false
-        // 重新加载角色详情
-        // this.loadRoleDetail()
-      }, 500)
     },
     
     // 切换部门选中状态
     toggleDeptSelection(dept) {
+      // 如果部门已被拥有，则不允许操作
+      if (this.isDeptAlreadyOwned(dept.deptCode)) {
+        return
+      }
+      
       const index = this.selectedDeptCodes.indexOf(dept.deptCode)
       if (index > -1) {
         this.selectedDeptCodes.splice(index, 1)
@@ -748,7 +859,10 @@ export default {
     // 全选/取消全选
     handleCheckAllDeptChange(val) {
       if (val) {
-        this.selectedDeptCodes = this.flatAllDepartments.map(d => d.deptCode)
+        // 只选择未拥有的部门
+        this.selectedDeptCodes = this.flatAvailableDepartments
+          .filter(d => !this.isDeptAlreadyOwned(d.deptCode))
+          .map(d => d.deptCode)
       } else {
         this.selectedDeptCodes = []
       }
@@ -757,16 +871,37 @@ export default {
     
     // 更新全选状态
     updateCheckAllDeptStatus() {
-      const total = this.flatAllDepartments.length
+      // 只统计未拥有的部门
+      const availableCount = this.flatAvailableDepartments.filter(d => !this.isDeptAlreadyOwned(d.deptCode)).length
       const selected = this.selectedDeptCodes.length
-      this.checkAllDept = selected === total && total > 0
-      this.isIndeterminateDept = selected > 0 && selected < total
+      this.checkAllDept = selected === availableCount && availableCount > 0
+      this.isIndeterminateDept = selected > 0 && selected < availableCount
     },
     
     // 切换展开/折叠
     toggleDeptExpand(dept) {
-      dept.expanded = !dept.expanded
-      this.$forceUpdate()
+      // 在原始树结构中找到对应节点并修改
+      const toggleInTree = (items) => {
+        for (const item of items) {
+          if (item.deptCode === dept.deptCode) {
+            this.$set(item, 'expanded', !item.expanded)
+            return true
+          }
+          if (item.children && item.children.length > 0) {
+            if (toggleInTree(item.children)) {
+              return true
+            }
+          }
+        }
+        return false
+      }
+      
+      // 根据当前打开的对话框决定修改哪个树结构
+      if (this.addDepartmentDialogVisible) {
+        toggleInTree(this.availableDepartments)
+      } else if (this.deleteDepartmentDialogVisible) {
+        toggleInTree(this.departments)
+      }
     },
     
     // 删除对话框 - 切换选中状态
@@ -930,6 +1065,31 @@ export default {
 .permission-list,
 .department-list {
   margin-top: 20px;
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.permission-list::-webkit-scrollbar,
+.department-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.permission-list::-webkit-scrollbar-track,
+.department-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.permission-list::-webkit-scrollbar-thumb,
+.department-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.permission-list::-webkit-scrollbar-thumb:hover,
+.department-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .custom-tree-node {
@@ -949,6 +1109,15 @@ export default {
 
 .custom-tree-node i {
   font-size: 16px;
+}
+
+/* 对话框中的树节点样式 */
+.el-dialog .custom-tree-node {
+  width: 100%;
+}
+
+.el-dialog .custom-tree-node .el-tag {
+  margin-left: 8px;
 }
 
 /* 基本信息 */
@@ -973,6 +1142,36 @@ export default {
 .dialog-hint i {
   color: #409eff;
   margin-right: 8px;
+}
+
+/* 菜单树容器 */
+.menu-tree-container {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  padding: 10px;
+  margin-top: 12px;
+  background-color: #fff;
+}
+
+.menu-tree-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.menu-tree-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.menu-tree-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.menu-tree-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .department-table-container {
@@ -1031,6 +1230,20 @@ export default {
 
 .custom-table tr.selected {
   background-color: #ecf5ff;
+}
+
+.custom-table tr.disabled-row {
+  background-color: #f5f5f5;
+  color: #c0c4cc;
+  cursor: not-allowed !important;
+}
+
+.custom-table tr.disabled-row:hover {
+  background-color: #f5f5f5 !important;
+}
+
+.custom-table tr.disabled-row td {
+  color: #c0c4cc;
 }
 
 .selection-column {

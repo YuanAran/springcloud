@@ -43,3 +43,39 @@ export function getRoleVo(roleId) {
     data: { roleId }
   })
 }
+
+// 新增角色部门
+export function addRoleDept(data) {
+  return request({
+    url: '/sys_role/addRoleDept',
+    method: 'post',
+    data
+  })
+}
+
+// 删除角色部门
+export function deleteRoleDept(data) {
+  return request({
+    url: '/sys_role/deleteRoleDept',
+    method: 'post',
+    data
+  })
+}
+
+// 新增角色菜单权限
+export function addRoleMenu(data) {
+  return request({
+    url: '/sys_role/addRoleMenu',
+    method: 'post',
+    data
+  })
+}
+
+// 删除角色菜单权限
+export function deleteRoleMenu(data) {
+  return request({
+    url: '/sys_role/deleteRoleMenu',
+    method: 'post',
+    data
+  })
+}
