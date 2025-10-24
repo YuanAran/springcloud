@@ -20,6 +20,7 @@
         <option value="$PROJECT_DIR$/sys_manage/sys_dict/pom.xml" />
         <option value="$PROJECT_DIR$/sys_manage/sys_menu/pom.xml" />
         <option value="$PROJECT_DIR$/sys_manage/sys_role/pom.xml" />
+        <option value="$PROJECT_DIR$/sys_manage/sys_post/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

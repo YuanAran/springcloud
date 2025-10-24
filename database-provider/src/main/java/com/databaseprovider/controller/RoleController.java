@@ -58,10 +58,6 @@ public class RoleController {
     public int insertRoleDept(@RequestBody List<SysRoleDept> list){
         return roleService.insertRoleDept(list);
     }
-    @PostMapping("/updateRoleDept")
-    public int updateRoleDept(@RequestBody SysRoleDept sysRoleDept){
-        return roleService.updateRoleDept(sysRoleDept);
-    }
 
     @PostMapping("/deleteRoleDept")
     public int deleteRoleDept(@RequestBody List<SysRoleDept> roleDepts){
@@ -75,10 +71,7 @@ public class RoleController {
     public int insertRoleMenu(@RequestBody List<SysRoleMenu> list){
         return roleService.insertRoleMenu(list);
     }
-    @PostMapping("/updateRoleMenu")
-    public int updateRoleMenu(@RequestBody SysRoleMenu sysRoleMenu){
-        return roleService.updateRoleMenu(sysRoleMenu);
-    }
+
     @PostMapping("/deleteRoleMenu")
     public int deleteRoleMenu(@RequestBody List<SysRoleMenu> roleMenus){
         return roleService.deleteRoleMenu(roleMenus);

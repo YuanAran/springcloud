@@ -51,17 +51,14 @@ public class RoleController {
 
 
     /**
-     * 权限部门增删改
+     * 权限部门增删
      * */
     @PostMapping("/addRoleDept")
     public int addRoleDept(@RequestBody List<SysRoleDept> list){
         return databaseClient.insertRoleDept(list);
     }
 
-    @PostMapping("/updateRoleDept")
-    public int updateRoleDept(@RequestBody SysRoleDept sysRoleDept){
-        return databaseClient.updateRoleDept(sysRoleDept);
-    }
+
 
     @PostMapping("/deleteRoleDept")
     public int deleteRoleDept(@RequestBody List<SysRoleDept> roleDepts){
@@ -69,17 +66,14 @@ public class RoleController {
     }
 
     /**
-     * 角色菜单增删改
+     * 角色菜单增删
      * */
     @PostMapping("/addRoleMenu")
     public int addRoleMenu(@RequestBody List<SysRoleMenu> list){
         return databaseClient.insertRoleMenu(list);
     }
 
-    @PostMapping("/updateRoleMenu")
-    public int updateRoleMenu(@RequestBody SysRoleMenu sysRoleMenu){
-        return databaseClient.updateRoleMenu(sysRoleMenu);
-    }
+
 
     @PostMapping("/deleteRoleMenu")
     public int deleteRoleMenu(@RequestBody List<SysRoleMenu> roleMenus){

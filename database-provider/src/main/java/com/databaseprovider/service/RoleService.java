@@ -74,12 +74,6 @@ public class RoleService {
         return totalInserted;
     }
 
-    public int updateRoleDept(SysRoleDept sysRoleDept){
-        QueryWrapper<SysRoleDept> wrapper = new QueryWrapper<SysRoleDept>()
-                .eq("role_id", sysRoleDept.getRoleId())
-                .eq("dept_code", sysRoleDept.getDeptCode());
-        return roleDeptMapper.update(sysRoleDept, wrapper);
-    }
 
     public int deleteRoleDept(List<SysRoleDept> list){
         int totalDeleted = 0;
@@ -108,12 +102,7 @@ public class RoleService {
     }
 
     //更新
-    public int updateRoleMenu(SysRoleMenu sysRoleMenu){
-        QueryWrapper<SysRoleMenu> wrapper = new QueryWrapper<SysRoleMenu>()
-                .eq("role_id", sysRoleMenu.getRoleId())
-                .eq("menu_id", sysRoleMenu.getMenuId());
-        return roleMenuMapper.update(sysRoleMenu, wrapper);
-    }
+
 
     //删除
     public int deleteRoleMenu(List<SysRoleMenu> list){

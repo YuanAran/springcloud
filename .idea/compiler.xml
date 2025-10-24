@@ -11,6 +11,7 @@
         <module name="sys_menu" />
         <module name="auth-server" />
         <module name="sys_dept" />
+        <module name="sys_post" />
         <module name="sys_dict" />
         <module name="gateway-server" />
         <module name="eureka-server" />

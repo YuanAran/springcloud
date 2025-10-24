@@ -35,21 +35,19 @@ public interface DatabaseClient {
     /**
      * 权限部门增删改
      * */
-    @PostMapping("/insertRoleDept")
+    @PostMapping("/db/role/insertRoleDept")
      int insertRoleDept(@RequestBody List<SysRoleDept> list);
-    @PostMapping("/updateRoleDept")
-     int updateRoleDept(@RequestBody SysRoleDept sysRoleDept);
 
-    @PostMapping("/deleteRoleDept")
+
+    @PostMapping("/db/role/deleteRoleDept")
      int deleteRoleDept(@RequestBody List<SysRoleDept> roleDepts);
 
     /**
      * 角色菜单增删改
      * */
-    @PostMapping("/insertRoleMenu")
+    @PostMapping("/db/role/insertRoleMenu")
      int insertRoleMenu(@RequestBody List<SysRoleMenu> list);
-    @PostMapping("/updateRoleMenu")
-     int updateRoleMenu(@RequestBody SysRoleMenu sysRoleMenu);
-    @PostMapping("/deleteRoleMenu")
+
+    @PostMapping("/db/role/deleteRoleMenu")
      int deleteRoleMenu(@RequestBody List<SysRoleMenu> roleMenus);
 }
