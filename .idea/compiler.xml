@@ -7,22 +7,23 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="common-security" />
-        <module name="sys_user" />
-        <module name="sys_menu" />
         <module name="auth-server" />
-        <module name="sys_dept" />
-        <module name="sys_post" />
         <module name="sys_dict" />
-        <module name="gateway-server" />
         <module name="eureka-server" />
         <module name="database-provider" />
-        <module name="common-entity" />
         <module name="sys_role" />
+        <module name="sys_user" />
+        <module name="sys_menu" />
+        <module name="sys_dept" />
+        <module name="sys_post" />
+        <module name="gateway-server" />
+        <module name="common-entity" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="cloud-eureka-server" target="1.8" />
       <module name="eureke-server" target="1.8" />
+      <module name="Test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
